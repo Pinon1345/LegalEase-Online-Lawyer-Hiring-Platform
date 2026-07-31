@@ -36,7 +36,7 @@ export default function ThemeToggle() {
             className="
         relative
         flex
-        h-11
+        h-10
         w-20
         items-center
         rounded-full

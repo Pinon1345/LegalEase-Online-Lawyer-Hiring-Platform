@@ -1,0 +1,49 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+const navLinks = [
+    {
+        name: "Home",
+        href: "/",
+    },
+    {
+        name: "Lawyers",
+        href: "/browse-lawyers",
+    },
+    {
+        name: "Dashboard",
+        href: "/dashboard",
+    },
+];
+
+export default function NavLinks({
+    mobile = false,
+    onNavigate,
+}) {
+    const pathname = usePathname();
+
+    return (
+        <>
+            {navLinks.map((link) => {
+                const active = pathname === link.href;
+
+                return (
+                    <Link
+                        onClick={onNavigate}
+                        key={link.name}
+                        href={link.href}
+                        className={`relative font-medium transition-all duration-300 link-premium
+                        
+                            ${active ? "text-primary font-semibold link-active" : "text-text hover:text-primary"}
+                            ${mobile ? "block rounded-lg px-4 py-3 text-lg hover:bg-surface" : "px-2 py-1"}
+                        `}
+                    >
+                        {link.name}
+                    </Link>
+                );
+            })}
+        </>
+    );
+}
