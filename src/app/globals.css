@@ -1,3 +1,302 @@
 @import "tailwindcss";
 @import "@heroui/styles";
 
+
+
+
+/* UI Theme */
+
+@import "tailwindcss";
+
+/* ======================================================
+   LIGHT THEME
+====================================================== */
+
+:root {
+    /* ================= Brand ================= */
+    --color-primary: #0B1F36;
+    --color-secondary: #D4A64A;
+    --color-accent: #F5D07A;
+
+    /* ================= Background ================= */
+    --color-background: #FAF8F4;
+    --color-surface: #FFFFFF;
+    --color-surface-dark: #102A43;
+
+    /* ================= Text ================= */
+    --color-text: #111827;
+    --color-text-secondary: #6B7280;
+    --color-muted: #9CA3AF;
+
+    /* ================= Border ================= */
+    --color-border: #E5E7EB;
+
+    /* ================= Status ================= */
+    --color-success: #16A34A;
+    --color-warning: #F59E0B;
+    --color-error: #DC2626;
+    --color-info: #2563EB;
+
+    /* ================= Link ================= */
+    --color-link: #1E40AF;
+}
+
+/* ======================================================
+   DARK THEME
+====================================================== */
+
+.dark {
+    /* ================= Brand ================= */
+    --color-primary: #D4A64A;
+    --color-secondary: #F5D07A;
+    --color-accent: #FFE8A3;
+
+    /* ================= Background ================= */
+    --color-background: #0F172A;
+    --color-surface: #1E293B;
+    --color-surface-dark: #020617;
+
+    /* ================= Text ================= */
+    --color-text: #F8FAFC;
+    --color-text-secondary: #CBD5E1;
+    --color-muted: #94A3B8;
+
+    /* ================= Border ================= */
+    --color-border: #334155;
+
+    /* ================= Status ================= */
+    --color-success: #22C55E;
+    --color-warning: #FBBF24;
+    --color-error: #EF4444;
+    --color-info: #60A5FA;
+
+    /* ================= Link ================= */
+    --color-link: #93C5FD;
+}
+
+/* ======================================================
+   Tailwind Theme Tokens
+====================================================== */
+
+@theme {
+    --color-primary: var(--color-primary);
+    --color-secondary: var(--color-secondary);
+    --color-accent: var(--color-accent);
+
+    --color-background: var(--color-background);
+    --color-surface: var(--color-surface);
+    --color-surface-dark: var(--color-surface-dark);
+
+    --color-text: var(--color-text);
+    --color-text-secondary: var(--color-text-secondary);
+    --color-muted: var(--color-muted);
+
+    --color-border: var(--color-border);
+
+    --color-success: var(--color-success);
+    --color-warning: var(--color-warning);
+    --color-error: var(--color-error);
+    --color-info: var(--color-info);
+
+    --color-link: var(--color-link);
+}
+
+
+
+/* Premium Logo Hover Animation (logo-premium) */
+
+
+.logo-premium {
+    animation: logoFloat 6s ease-in-out infinite;
+    transition:
+        transform .35s ease,
+        filter .35s ease;
+}
+
+.logo-premium:hover {
+    animation-play-state: paused;
+
+    transform: scale(1.05) rotate(-3deg);
+
+    filter: drop-shadow(0 8px 16px rgba(212, 166, 74, .25));
+}
+
+@keyframes logoFloat {
+
+    0%,
+    100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+
+    25% {
+        transform: translateY(-3px) rotate(.8deg);
+    }
+
+    50% {
+        transform: translateY(-6px) rotate(0deg);
+    }
+
+    75% {
+        transform: translateY(-3px) rotate(-.8deg);
+    }
+
+}
+
+
+/* Premium Logo Text Animation (shine-text) */
+
+
+.shine-text {
+    background: linear-gradient(90deg,
+            var(--color-text) 0%,
+            var(--color-secondary) 42%,
+            var(--color-accent) 50%,
+            var(--color-secondary) 58%,
+            var(--color-text) 100%);
+
+    background-size: 250% auto;
+
+    color: transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+
+    animation: shine 6s linear infinite;
+}
+
+@keyframes shine {
+    from {
+        background-position: 0% center;
+    }
+
+    to {
+        background-position: 250% center;
+    }
+}
+
+
+/* Hero Title, Hero Content, Section Heading (fade-up) */
+
+
+.fade-up {
+    animation: fadeUp .8s ease both;
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+
+
+/* Premium Card Hover Effect (card-hover) */
+
+
+.card-hover {
+    transition: all .35s ease;
+}
+
+.card-hover:hover {
+
+    transform:
+        translateY(-4px) scale(1.015);
+
+    border-color: var(--color-secondary);
+
+    box-shadow:
+        0 14px 32px rgba(2, 6, 23, .10);
+
+}
+
+
+/* Premium Button Hover (btn-premium) */
+
+
+.btn-premium {
+    transition: all .35s ease;
+}
+
+.btn-premium:hover {
+    transform: translateY(-3px);
+
+    box-shadow:
+        0 12px 30px rgba(212, 166, 74, .25);
+}
+
+
+/* Premium Underline for Navbar Menu (link-premium) */
+
+
+.link-premium {
+    position: relative;
+}
+
+.link-premium::after {
+    content: "";
+
+    position: absolute;
+
+    left: 50%;
+
+    bottom: -6px;
+
+    width: 0;
+
+    height: 2px;
+
+    background: var(--color-secondary);
+
+    transform: translateX(-50%);
+
+    transition: .35s;
+}
+
+.link-premium:hover::after {
+    width: 100%;
+}
+
+
+/* Verified Lawyer Badge (gold-pulse) */
+
+
+.gold-pulse {
+    animation: goldPulse 2.5s infinite;
+}
+
+@keyframes goldPulse {
+
+    0% {
+        box-shadow: 0 0 0 0 rgba(212, 166, 74, .45);
+    }
+
+    70% {
+        box-shadow: 0 0 0 16px rgba(212, 166, 74, 0);
+    }
+
+    100% {
+        box-shadow: 0 0 0 0 rgba(212, 166, 74, 0);
+    }
+
+}
+
+
+/* Image Zoom for Card (image-hover) */
+
+
+.image-hover {
+    overflow: hidden;
+}
+
+.image-hover img {
+    transition: .5s;
+}
+
+.image-hover:hover img {
+    transform: scale(1.08);
+}
