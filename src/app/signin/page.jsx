@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
     Form,
     Button,
@@ -26,7 +25,7 @@ import { authClient } from "@/lib/auth-client";
 import toast from "react-hot-toast";
 
 export default function SigninPage() {
-    const router = useRouter();
+    // const router = useRouter();
 
     // Form Data State
 
@@ -118,7 +117,7 @@ export default function SigninPage() {
                 }
 
                 toast.success("Welcome back! Signed in Successfully!");
-                router.push("/");
+                window.location.href = "/";
             } catch (err) {
                 console.error("Auth Exception:", err);
                 toast.error("An Unexpected Error Occurred!");

@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation"; // Added missing router import
 import {
     Form,
     Button,
@@ -29,7 +28,7 @@ import toast from "react-hot-toast";
 
 export default function SignupPage() {
 
-    const router = useRouter(); // Initialized router instance
+    // const router = useRouter(); // Initialized router instance
 
     // Form Data State
 
@@ -155,15 +154,18 @@ export default function SignupPage() {
                 return;
             }
 
+            console.log("My SignUp Data", data);
+
             toast.success("Congratulations! Account created successfully!");
             setIsRoleModalOpen(false);
-            router.push("/");
+            window.location.href = "/";
         } catch (err) {
             console.error("Auth Exception:", err);
             toast.error("An Unexpected Error Occurred!");
         } finally {
             setIsSubmitting(false);
         }
+        
     };
 
     const handleGoogleSignup = async () => {

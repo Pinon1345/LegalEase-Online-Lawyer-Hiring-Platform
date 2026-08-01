@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "@/lib/auth-client";
 
 const navLinks = [
     {
@@ -15,6 +16,7 @@ const navLinks = [
     {
         name: "Dashboard",
         href: "/dashboard",
+        protected: true, // Marker for protected routes
     },
 ];
 
@@ -23,10 +25,19 @@ export default function NavLinks({
     onNavigate,
 }) {
     const pathname = usePathname();
+    const { data: session } = useSession();
+
+    // Filter links based on whether user is logged in
+    const visibleLinks = navLinks.filter((link) => {
+        if (link.protected && !session?.user) {
+            return false;
+        }
+        return true;
+    });
 
     return (
         <>
-            {navLinks.map((link) => {
+            {visibleLinks.map((link) => {
                 const active = pathname === link.href;
 
                 return (

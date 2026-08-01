@@ -10,7 +10,7 @@ export const auth = betterAuth({
     secret: process.env.BETTER_AUTH_SECRET,
 
     // REQUIRED FOR LINKING ACCOUNTS
-    
+
     account: {
         accountLinking: {
             enabled: true,
@@ -41,6 +41,9 @@ export const auth = betterAuth({
                 required: false,
                 defaultValue: "client",
                 input: true, // ALLOWS CLIENT SDK TO WRITE TO THIS FIELD
+            },
+            isBlocked: {
+                defaultValue: false
             },
         },
     },
