@@ -10,7 +10,7 @@ const stats = [
     {
         id: "lawyers",
         title: "Total Lawyers",
-        value: "1,250+",
+        valueStats: "1,250+",
         description: "Verified legal counsel across 40+ specialties",
         icon: FaUserTie,
         badge: "Bar Verified",
@@ -24,7 +24,7 @@ const stats = [
     {
         id: "clients",
         title: "Total Clients",
-        value: "48,000+",
+        valueStats: "48,000+",
         description: "Individuals & businesses protected globally",
         icon: FaUsersViewfinder,
         badge: "99.2% Satisfaction",
@@ -38,7 +38,7 @@ const stats = [
     {
         id: "cases",
         title: "Cases Resolved",
-        value: "95,000+",
+        valueStats: "95,000+",
         description: "Successful litigation, mediation & agreements",
         icon: FaScaleBalanced,
         badge: "Proven Record",
@@ -48,7 +48,7 @@ const stats = [
     {
         id: "consultations",
         title: "Consultations",
-        value: "120,000+",
+        valueStats: "120,000+",
         description: "Private virtual & in-person consultations held",
         icon: FaHandshakeSimple,
         badge: "24/7 Available",
@@ -112,7 +112,7 @@ const StatsSection = () => {
 
                                     {/* Stat Counter / Value */}
                                     <h3 className="text-3xl sm:text-4xl font-black text-text tracking-tight group-hover:text-secondary transition-colors duration-300">
-                                        {item.value}
+                                        {item.valueStats}
                                     </h3>
 
                                     {/* Stat Title */}
