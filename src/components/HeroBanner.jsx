@@ -35,7 +35,7 @@ const slides = [
     },
     {
         id: 3,
-        image: "https://images.unsplash.com/photo-1582839570721-cc345867a683?q=80&w=387&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        image: "https://t3.ftcdn.net/jpg/04/62/41/32/360_F_462413244_34T7lDHP1JsgPRaO3elyN9RTaxC0PbaF.jpg",
         badge: "Strategic Advocacy",
         badgeIcon: FaGavel,
         title: "Expert Representation in Court & Arbitration",
@@ -235,8 +235,8 @@ const HeroBanner = () => {
                                 onClick={() => setCurrentSlide(index)}
                                 aria-label={`Go to slide ${index + 1}`}
                                 className={`h-2.5 rounded-full transition-all duration-300 ${currentSlide === index
-                                        ? "w-8 bg-secondary"
-                                        : "w-2.5 bg-muted/40 hover:bg-muted"
+                                    ? "w-8 bg-secondary"
+                                    : "w-2.5 bg-muted/40 hover:bg-muted"
                                     }`}
                             />
                         ))}
