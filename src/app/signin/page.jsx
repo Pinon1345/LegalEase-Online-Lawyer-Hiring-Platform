@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
     Form,
     Button,
@@ -20,7 +21,12 @@ import {
     FaScaleBalanced,
 } from "react-icons/fa6";
 
+import { authClient } from "@/lib/auth-client";
+
+import toast from "react-hot-toast";
+
 export default function SigninPage() {
+    const router = useRouter();
 
     // Form Data State
 
@@ -101,23 +107,39 @@ export default function SigninPage() {
         if (isValid) {
             setIsSubmitting(true);
             try {
-                console.log("Submitting Signin Data:", formData);
+                const { data, error } = await authClient.signIn.email({
+                    email: formData.email,
+                    password: formData.password,
+                });
 
-                // Simulation delay
+                if (error) {
+                    toast.error(error.message || "Ahh! Failed to Sign In!");
+                    return;
+                }
 
-                await new Promise((resolve) => setTimeout(resolve, 1200));
-
-                alert("Successfully signed in!");
+                toast.success("Welcome back! Signed in Successfully!");
+                router.push("/");
             } catch (err) {
-                console.error(err);
+                console.error("Auth Exception:", err);
+                toast.error("An Unexpected Error Occurred!");
             } finally {
                 setIsSubmitting(false);
             }
         }
     };
 
-    const handleGoogleSignin = () => {
-        console.log("Initiating Google OAuth...");
+    // Social Signin Handler
+
+    const handleGoogleSignin = async () => {
+        try {
+            await authClient.signIn.social({
+                provider: "google",
+                callbackURL: "/",
+            });
+        } catch (err) {
+            console.error("Google Signin Exception:", err);
+            toast.error("Google Sign-In failed!");
+        }
     };
 
     return (
@@ -148,9 +170,6 @@ export default function SigninPage() {
                             Sign in to access your legal consultation and representation dashboard.
                         </p>
                     </div>
-
-
-
 
                     {/* Form */}
 
@@ -243,8 +262,10 @@ export default function SigninPage() {
                         <span>Continue with Google</span>
                     </Button>
 
+
+
                     {/* Signup Link */}
-                    
+
                     <p className="mt-6 text-center text-xs sm:text-sm text-text-secondary">
                         Don&apos;t have an account?{" "}
                         <Link href="/signup" className="font-bold text-secondary hover:underline">

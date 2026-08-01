@@ -29,12 +29,14 @@ export default function RoleSelectionModal({
                         </Modal.Header>
 
                         <Modal.Body className="py-4 space-y-4">
+
                             {/* Role Option 1: Client */}
+
                             <div
-                                onClick={() => setSelectedRole("Client")}
-                                className={`card-hover group cursor-pointer relative rounded-2xl border p-4 flex items-center gap-4 transition-all ${selectedRole === "Client"
-                                        ? "border-secondary bg-secondary/15 ring-2 ring-secondary"
-                                        : "border-border bg-background hover:border-secondary/50"
+                                onClick={() => setSelectedRole("client")}
+                                className={`card-hover group cursor-pointer relative rounded-2xl border p-4 flex items-center gap-4 transition-all ${selectedRole === "client"
+                                    ? "border-secondary bg-secondary/15 ring-2 ring-secondary"
+                                    : "border-border bg-background hover:border-secondary/50"
                                     }`}
                             >
                                 <div className="p-3.5 rounded-xl bg-surface border border-border text-secondary group-hover:bg-secondary group-hover:text-surface-dark transition-all">
@@ -46,7 +48,7 @@ export default function RoleSelectionModal({
                                         I need legal advice, counsel, or court representation.
                                     </p>
                                 </div>
-                                {selectedRole === "Client" && (
+                                {selectedRole === "client" && (
                                     <div className="p-1.5 rounded-full bg-secondary text-surface-dark">
                                         <FaCheck size={12} />
                                     </div>
@@ -55,10 +57,10 @@ export default function RoleSelectionModal({
 
                             {/* Role Option 2: Lawyer */}
                             <div
-                                onClick={() => setSelectedRole("Lawyer")}
-                                className={`card-hover group cursor-pointer relative rounded-2xl border p-4 flex items-center gap-4 transition-all ${selectedRole === "Lawyer"
-                                        ? "border-secondary bg-secondary/15 ring-2 ring-secondary"
-                                        : "border-border bg-background hover:border-secondary/50"
+                                onClick={() => setSelectedRole("lawyer")}
+                                className={`card-hover group cursor-pointer relative rounded-2xl border p-4 flex items-center gap-4 transition-all ${selectedRole === "lawyer"
+                                    ? "border-secondary bg-secondary/15 ring-2 ring-secondary"
+                                    : "border-border bg-background hover:border-secondary/50"
                                     }`}
                             >
                                 <div className="p-3.5 rounded-xl bg-surface border border-border text-secondary group-hover:bg-secondary group-hover:text-surface-dark transition-all">
@@ -70,12 +72,13 @@ export default function RoleSelectionModal({
                                         I am a certified legal practitioner looking to offer services.
                                     </p>
                                 </div>
-                                {selectedRole === "Lawyer" && (
+                                {selectedRole === "lawyer" && (
                                     <div className="p-1.5 rounded-full bg-secondary text-surface-dark">
                                         <FaCheck size={12} />
                                     </div>
                                 )}
                             </div>
+
                         </Modal.Body>
 
                         <Modal.Footer className="pt-2 flex gap-3">
@@ -90,12 +93,12 @@ export default function RoleSelectionModal({
 
                             <Button
                                 type="button"
-                                onClick={onFinalSubmit}
+                                onClick={() => onFinalSubmit(selectedRole)}
                                 isLoading={isSubmitting}
                                 isDisabled={!selectedRole || isSubmitting}
                                 className={`flex-1 rounded-xl font-extrabold text-surface-dark transition ${selectedRole
-                                        ? "btn-premium bg-secondary hover:bg-accent"
-                                        : "bg-muted/40 cursor-not-allowed opacity-60"
+                                    ? "btn-premium bg-secondary hover:bg-accent"
+                                    : "bg-muted/40 cursor-not-allowed opacity-60"
                                     }`}
                             >
                                 Complete Signup

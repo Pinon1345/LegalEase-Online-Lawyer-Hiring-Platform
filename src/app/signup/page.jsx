@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation"; // Added missing router import
 import {
     Form,
     Button,
@@ -23,8 +24,12 @@ import {
 } from "react-icons/fa6";
 
 import RoleSelectionModal from "@/components/RoleSelectionModal";
+import { authClient } from "@/lib/auth-client";
+import toast from "react-hot-toast";
 
 export default function SignupPage() {
+
+    const router = useRouter(); // Initialized router instance
 
     // Form Data State
 
@@ -61,7 +66,6 @@ export default function SignupPage() {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
 
-        // Clear error for edited field dynamically
 
         if (fieldErrors[name]) {
             setFieldErrors((prev) => ({ ...prev, [name]: "" }));
@@ -75,7 +79,9 @@ export default function SignupPage() {
         return re.test(String(email).toLowerCase());
     };
 
-    // Step 1: Submit and Validate
+
+    // Step 1: Form Validation before showing Modal
+
 
     const handleInitialSubmit = (e) => {
         e.preventDefault();
@@ -88,8 +94,6 @@ export default function SignupPage() {
 
         let isValid = true;
 
-        // Email Validation
-
         if (!formData.email) {
             errors.email = "Email address is required.";
             isValid = false;
@@ -98,8 +102,6 @@ export default function SignupPage() {
             isValid = false;
         }
 
-        // Password Validation
-
         if (!formData.password) {
             errors.password = "Password is required.";
             isValid = false;
@@ -107,8 +109,6 @@ export default function SignupPage() {
             errors.password = "Password must be at least 6 characters long.";
             isValid = false;
         }
-
-        // Confirm Password Validation
 
         if (!formData.confirmPassword) {
             errors.confirmPassword = "Please confirm your password.";
@@ -125,34 +125,56 @@ export default function SignupPage() {
         }
     };
 
-    // Step 2: Final Submission
 
-    const handleFinalSignup = async () => {
-        if (!selectedRole) return;
+
+    // Step 2: Final Submission with Better Auth
+
+
+    const handleFinalSignup = async (roleToSubmit) => {
+        const role = (typeof roleToSubmit === "string" ? roleToSubmit : selectedRole);
+        if (!role) {
+            toast.error("Please select a role to continue.");
+            return;
+        }
 
         setIsSubmitting(true);
 
-        const finalUserData = {
-            ...formData,
-            role: selectedRole,
-        };
-
         try {
-            console.log("Submitting Signup Data:", finalUserData);
+            const { data, error } = await authClient.signUp.email({
+                email: formData?.email,
+                password: formData?.password,
+                name: formData?.name,
+                image: formData.imageUrl || undefined,
+                role: role, // or role: selectedRole
+            });
 
-            await new Promise((resolve) => setTimeout(resolve, 1200));
+            if (error) {
 
-            alert(`Welcome to LegalEase! Account created successfully as a ${selectedRole}.`);
+                toast.error(error.message || "Ahh! Failed to Create Account!");
+                setIsRoleModalOpen(false);
+                return;
+            }
+
+            toast.success("Congratulations! Account created successfully!");
             setIsRoleModalOpen(false);
+            router.push("/");
         } catch (err) {
-            console.error(err);
+            console.error("Auth Exception:", err);
+            toast.error("An Unexpected Error Occurred!");
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    const handleGoogleSignup = () => {
-        console.log("Initiating Google OAuth...");
+    const handleGoogleSignup = async () => {
+        try {
+            await authClient.signIn.social({
+                provider: "google",
+                callbackURL: "/",
+            });
+        } catch (err) {
+            console.error("Google Signin Exception:", err);
+        }
     };
 
     return (
@@ -210,7 +232,7 @@ export default function SignupPage() {
                             </div>
                         </TextField>
 
-                        {/* Profile Image URL Field (OPTIONAL) */}
+                        {/* Profile Image URL Field */}
 
                         <TextField className="w-full space-y-1">
                             <Label className="text-xs mb-2 font-bold text-text-secondary uppercase tracking-wider">
@@ -229,7 +251,7 @@ export default function SignupPage() {
                             </div>
                         </TextField>
 
-                        {/* Email Address Field with Validation */}
+                        {/* Email Address Field */}
 
                         <TextField isInvalid={Boolean(fieldErrors.email)} className="w-full space-y-1">
                             <Label className="text-xs mb-2 font-bold text-text-secondary uppercase tracking-wider">
@@ -251,7 +273,7 @@ export default function SignupPage() {
                             </FieldError>
                         </TextField>
 
-                        {/* Password Field with Validation & Toggle */}
+                        {/* Password Field */}
 
                         <TextField isInvalid={Boolean(fieldErrors.password)} className="w-full space-y-1">
                             <Label className="text-xs mb-2 font-bold text-text-secondary uppercase tracking-wider">
@@ -281,7 +303,7 @@ export default function SignupPage() {
                             </FieldError>
                         </TextField>
 
-                        {/* Confirm Password Field with Validation & Toggle */}
+                        {/* Confirm Password Field */}
 
                         <TextField isInvalid={Boolean(fieldErrors.confirmPassword)} className="w-full space-y-1">
                             <Label className="text-xs mb-2 font-bold text-text-secondary uppercase tracking-wider">
@@ -312,7 +334,8 @@ export default function SignupPage() {
                         </TextField>
 
 
-                        {/* Role Selection Button */}
+
+                        {/* Submit Button */}
 
                         <div className="pt-3 w-full">
                             <Button
@@ -344,7 +367,6 @@ export default function SignupPage() {
                         <span>Sign up with Google</span>
                     </Button>
 
-
                     {/* Signin Link */}
 
                     <p className="mt-6 text-center text-xs sm:text-sm text-text-secondary">
@@ -358,7 +380,7 @@ export default function SignupPage() {
             </div>
 
             {/* Role Selection Modal Component */}
-            
+
             <RoleSelectionModal
                 isOpen={isRoleModalOpen}
                 onClose={() => setIsRoleModalOpen(false)}
