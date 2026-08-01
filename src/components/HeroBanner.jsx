@@ -83,7 +83,7 @@ const slides = [
     },
     {
         id: 9,
-        image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?q=80&w=1200&auto=format&fit=crop",
+        image: "https://media.istockphoto.com/id/2248801947/photo/professional-discussion-on-courthouse-steps.jpg?s=612x612&w=0&k=20&c=l-PFtVBw3lZAvwJViGIUGEjnBYG_4pH0RWLosUgj4ZA=",
         badge: "Fast Case Resolution",
         badgeIcon: FaGavel,
         title: "Streamlined Case Management & Direct Hiring",
