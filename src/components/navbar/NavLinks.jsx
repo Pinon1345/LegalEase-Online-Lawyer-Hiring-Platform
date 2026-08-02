@@ -10,7 +10,7 @@ const navLinks = [
         href: "/",
     },
     {
-        name: "Lawyers",
+        name: "Browse Lawyers",
         href: "/lawyers",
     },
     {
