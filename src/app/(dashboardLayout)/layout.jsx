@@ -8,7 +8,9 @@ import { Scale, Menu } from "lucide-react";
 
 import { authClient, useSession } from "@/lib/auth-client";
 import Footer from "@/components/Footer";
-import DashboardSidebar from "@/components/DashboardSidebar";
+import LawyerDashboardSidebar from "@/components/LawyerDashboardSidebar";
+import AdminDashboardSidebar from "@/components/AdminDashboardSidebar";
+import ClientDashboardSidebar from "@/components/ClientDashboardSidebar";
 
 export default function DashboardLayout({ children }) {
     const pathname = usePathname();
@@ -19,7 +21,7 @@ export default function DashboardLayout({ children }) {
     const [isMobileOpen, setIsMobileOpen] = useState(false);
 
     const user = session?.user;
-    const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : "L";
+    const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : "U";
 
     const handleSignOut = async () => {
         setIsMobileOpen(false);
@@ -31,8 +33,39 @@ export default function DashboardLayout({ children }) {
                 },
             },
         });
-        window.location.href = "/signin";
     };
+
+    // Shared props builder for sidebars
+
+    const getSidebarProps = (isMobile = false) => ({
+        collapsed: isMobile ? false : isCollapsed,
+        isMobile,
+        pathname,
+        user,
+        userInitial,
+        onCloseMobile: () => setIsMobileOpen(false),
+        onToggleCollapse: () => setIsCollapsed((prev) => !prev),
+        onSignOut: handleSignOut,
+    });
+
+
+
+
+    // Dynamic Dashboard Sidebar rendering based on ROLE
+
+
+    const renderSidebar = (isMobile = false) => {
+        const props = getSidebarProps(isMobile);
+        switch (user?.role) {
+            case "admin":
+                return <AdminDashboardSidebar {...props} />;
+            case "lawyer":
+                return <LawyerDashboardSidebar {...props} />;
+            default:
+                return <ClientDashboardSidebar {...props} />;
+        }
+    };
+
 
     return (
         <div className="min-h-screen flex flex-col bg-background text-text transition-colors duration-300">
@@ -68,15 +101,8 @@ export default function DashboardLayout({ children }) {
                     className={`hidden md:flex flex-col sticky top-0 h-screen glass border-r border-secondary/20 transition-all duration-300 shrink-0 ${isCollapsed ? "w-20" : "w-72"
                         }`}
                 >
-                    <DashboardSidebar
-                        collapsed={isCollapsed}
-                        isMobile={false}
-                        pathname={pathname}
-                        user={user}
-                        userInitial={userInitial}
-                        onToggleCollapse={() => setIsCollapsed((prev) => !prev)}
-                        onSignOut={handleSignOut}
-                    />
+                    {renderSidebar(false)}
+
                 </aside>
 
                 {/* Mobile Drawer */}
@@ -99,15 +125,7 @@ export default function DashboardLayout({ children }) {
                                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
                                 className="fixed left-0 top-0 z-50 h-full w-[80%] max-w-72 glass border-r border-secondary/20 bg-background shadow-2xl md:hidden"
                             >
-                                <DashboardSidebar
-                                    collapsed={false}
-                                    isMobile={true}
-                                    pathname={pathname}
-                                    user={user}
-                                    userInitial={userInitial}
-                                    onCloseMobile={() => setIsMobileOpen(false)}
-                                    onSignOut={handleSignOut}
-                                />
+                                {renderSidebar(true)}
                             </motion.aside>
                         </>
                     )}

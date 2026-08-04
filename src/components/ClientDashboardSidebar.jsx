@@ -7,11 +7,8 @@ import { motion } from "framer-motion";
 import { useTheme } from "next-themes";
 import {
     LayoutDashboard,
-    CalendarCheck,
-    Users,
-    Briefcase,
-    FileText,
-    Settings,
+    UserCheck,
+    MessageSquare,
     Home,
     LogOut,
     Scale,
@@ -24,48 +21,31 @@ import {
 } from "lucide-react";
 import { MdOutlineManageHistory } from "react-icons/md";
 
-// Navigation Items for LegalEase Dashboard
-
-const lawyerNavItems = [
+// Navigation Items for Client/User Dashboard based on Assignment Spec
+const clientNavItems = [
     {
-        name: "Overview",
-        href: "/dashboard/lawyer",
+        name: "Profile Overview",
+        href: "/dashboard/client",
         icon: LayoutDashboard,
     },
     {
         name: "Hiring History",
-        href: "/dashboard/lawyer/hiring-history",
+        href: "/dashboard/client/hiring-history",
         icon: MdOutlineManageHistory,
     },
     {
-        name: "Appointments",
-        href: "/dashboard/lawyer/appointments",
-        icon: CalendarCheck,
+        name: "Update Profile",
+        href: "/dashboard/client/update-profile",
+        icon: UserCheck,
     },
     {
-        name: "My Cases",
-        href: "/dashboard/lawyer/cases",
-        icon: Briefcase,
-    },
-    {
-        name: "Profile Management",
-        href: "/dashboard/lawyer/manage-legal-profile",
-        icon: Users,
-    },
-    {
-        name: "Invoices & Billing",
-        href: "/dashboard/lawyer/invoices",
-        icon: FileText,
-    },
-    {
-        name: "Settings",
-        href: "/dashboard/lawyer/settings",
-        icon: Settings,
+        name: "Comment Management",
+        href: "/dashboard/client/comments",
+        icon: MessageSquare,
     },
 ];
 
 // Sidebar Theme Toggle Component
-
 function ThemeToggle({ collapsed = false, isMobile = false }) {
     const isClient = useSyncExternalStore(
         () => () => { },
@@ -105,9 +85,8 @@ function ThemeToggle({ collapsed = false, isMobile = false }) {
     );
 }
 
-// Main Dashboard Sidebar Component
-
-export default function DashboardSidebar({
+// Main Client Dashboard Sidebar Component
+export default function ClientDashboardSidebar({
     collapsed = false,
     isMobile = false,
     pathname,
@@ -119,13 +98,9 @@ export default function DashboardSidebar({
 }) {
     return (
         <div className="flex flex-col h-full justify-between p-4 overflow-y-auto no-scrollbar">
-
             {/* Top Navigation & Profile Area */}
-
             <div className="flex flex-col">
-
                 {/* Logo & Toggle Header */}
-
                 <div className="flex items-center justify-between pb-6 border-b border-border/60">
                     <Link
                         href="/"
@@ -145,14 +120,13 @@ export default function DashboardSidebar({
                                     Legal<span className="text-secondary">Ease</span>
                                 </span>
                                 <span className="text-[10px] font-bold text-text-secondary uppercase tracking-widest mt-0.5">
-                                    {user?.role} Portal
+                                    {user?.role || "User"} Portal
                                 </span>
                             </motion.div>
                         )}
                     </Link>
 
                     {/* Desktop Collapse Toggle */}
-
                     {!isMobile && (
                         <button
                             onClick={onToggleCollapse}
@@ -164,7 +138,6 @@ export default function DashboardSidebar({
                     )}
 
                     {/* Mobile Close Button */}
-
                     {isMobile && (
                         <button
                             onClick={onCloseMobile}
@@ -177,7 +150,6 @@ export default function DashboardSidebar({
                 </div>
 
                 {/* User Profile Card */}
-
                 <div className="my-5">
                     <div
                         className={`flex items-center gap-3 rounded-2xl border border-secondary/20 bg-neutral-200/90 dark:bg-neutral-900/95 p-3 shadow-md backdrop-blur-xl ${collapsed && !isMobile ? "justify-center p-2" : ""
@@ -201,27 +173,26 @@ export default function DashboardSidebar({
                         {(!collapsed || isMobile) && (
                             <div className="flex flex-col truncate">
                                 <span className="font-bold text-sm text-text truncate">
-                                    {user?.name || "Legal Advisor"}
+                                    {user?.name || "Client User"}
                                 </span>
                                 <span className="text-[11px] text-text-secondary truncate flex items-center gap-1 mt-1">
                                     <ShieldCheck size={14} className="text-secondary" />
-                                    <p className="uppercase text-[12px]">{user?.role || "Unknown"}</p>
+                                    <p className="uppercase text-[12px]">{user?.role || "User"}</p>
                                 </span>
                             </div>
                         )}
                     </div>
                 </div>
 
-                {/* Navigation Links */}
-
+                {/* Client Navigation Links */}
                 <div className="space-y-1 mt-2 mb-2">
                     {(!collapsed || isMobile) && (
                         <p className="px-3 text-[11px] font-extrabold uppercase tracking-wider text-text-secondary mb-3">
-                            Navigation
+                            Client Menu
                         </p>
                     )}
 
-                    {lawyerNavItems.map((item) => {
+                    {clientNavItems.map((item) => {
                         const isActive = pathname === item.href;
                         const Icon = item.icon;
 
@@ -231,8 +202,8 @@ export default function DashboardSidebar({
                                 href={item?.href}
                                 onClick={() => isMobile && onCloseMobile()}
                                 className={`relative flex items-center gap-3.5 rounded-xl px-3.5 py-3 text-sm font-semibold transition-all duration-300 ${isActive
-                                        ? "text-surface-dark bg-secondary font-bold shadow-lg shadow-secondary/20"
-                                        : "text-text-secondary hover:bg-secondary/10 hover:text-secondary"
+                                    ? "text-surface-dark bg-secondary font-bold shadow-lg shadow-secondary/20"
+                                    : "text-text-secondary hover:bg-secondary/10 hover:text-secondary"
                                     } ${collapsed && !isMobile ? "justify-center px-0" : ""}`}
                             >
                                 <Icon size={20} className="shrink-0" />
@@ -243,7 +214,7 @@ export default function DashboardSidebar({
 
                                 {isActive && (!collapsed || isMobile) && (
                                     <motion.div
-                                        layoutId="activeGlow"
+                                        layoutId="activeGlowClient"
                                         className="absolute right-2 h-2 w-2 rounded-full bg-surface-dark"
                                         transition={{ type: "spring", stiffness: 300, damping: 30 }}
                                     />
@@ -255,7 +226,6 @@ export default function DashboardSidebar({
             </div>
 
             {/* Bottom Controls Area */}
-            
             <div className="mt-auto pt-6 border-t border-border/60 space-y-2">
                 <ThemeToggle collapsed={collapsed} isMobile={isMobile} />
 
