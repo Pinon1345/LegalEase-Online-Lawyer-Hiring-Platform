@@ -20,7 +20,7 @@ export const updateLawyer = async (data, id) => {
 }
 
 
-// Delete Lawyer
+// Lawyer Delete
 
 export const deleteLawyer = async (id) => {
     const resData = await serverMutation(`/api/lawyer/${id}`, "DELETE");
