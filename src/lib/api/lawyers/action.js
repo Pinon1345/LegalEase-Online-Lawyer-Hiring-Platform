@@ -18,3 +18,11 @@ export const updateLawyer = async (data, id) => {
     const resData = await serverMutation(`/api/lawyer/${id}`, "PATCH", data)
     return resData;
 }
+
+
+// Delete Lawyer
+
+export const deleteLawyer = async (id) => {
+    const resData = await serverMutation(`/api/lawyer/${id}`, "DELETE");
+    return resData;
+};

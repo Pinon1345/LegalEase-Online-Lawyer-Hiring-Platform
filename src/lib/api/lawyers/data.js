@@ -16,3 +16,19 @@ export const lawyerProfile = async (userId) => {
         return null;
     }
 };
+
+
+
+
+// Fetch all lawyers from http://localhost:5000/api/lawyers
+
+
+export const getLawyers = async () => {
+    try {
+        const data = await serverFetch("/api/lawyers");
+        return data;
+    } catch (error) {
+        console.error("Error fetching lawyers:", error);
+        return [];
+    }
+};

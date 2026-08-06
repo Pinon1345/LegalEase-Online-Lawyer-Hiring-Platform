@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Scale,
@@ -16,11 +17,13 @@ import {
     Briefcase,
     DollarSign,
     Loader2,
+    Trash2,
 } from "lucide-react";
-import { addLawyer, updateLawyer } from "@/lib/api/lawyers/action";
+import { addLawyer, updateLawyer, deleteLawyer } from "@/lib/api/lawyers/action";
 import toast from "react-hot-toast";
 import { lawyerProfile } from "@/lib/api/lawyers/data";
 import { LawyerCardSkeleton } from "../ui/Skeleton";
+import DeleteConfirmationModal from "../DeleteConfirmationModal";
 
 const IMGBB_API_KEY = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
 
@@ -40,7 +43,9 @@ export default function LawyerProfileForm({
     user,
     onSaveProfile,
     onVerifyPayment,
+    onDeleteProfile,
 }) {
+    const router = useRouter();
     const isVerified = true;
 
     // Loading state while fetching initial data from backend
@@ -49,6 +54,9 @@ export default function LawyerProfileForm({
     const [isEditing, setIsEditing] = useState(false);
     const [uploadingImage, setUploadingImage] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     // Store Lawyer Profile Data in state
 
@@ -90,6 +98,7 @@ export default function LawyerProfileForm({
     }, [user?.name, user?.image]);
 
     // Fetch lawyer profile on page mount/refresh
+
     useEffect(() => {
         const fetchProfileData = async () => {
             if (!user?.id) {
@@ -112,7 +121,7 @@ export default function LawyerProfileForm({
                 console.error("Failed to fetch lawyer profile:", error);
                 setMyProfile(null);
                 setIsEditing(true);
-            } finally {
+            } flex: {
                 setIsLoading(false);
             }
         };
@@ -121,6 +130,7 @@ export default function LawyerProfileForm({
     }, [user?.id, user?.name, user?.image, populateForm]);
 
     // Handle ImgBB Image Upload
+
     const handleImageUpload = async (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -152,7 +162,41 @@ export default function LawyerProfileForm({
         }
     };
 
+
+    // Delete Profile Action
+
+    // 1. Opens the Modal when clicking your form button
+
+    const openDeleteModal = () => {
+        if (!myProfile?._id) return;
+        setIsDeleteModalOpen(true);
+    };
+
+    // 2. Performs the actual deletion when confirmed inside the modal
+
+    const confirmDelete = async () => {
+        if (!myProfile?._id) return;
+
+        setIsDeleting(true);
+        try {
+            await onDeleteProfile?.(myProfile._id);
+            if (typeof deleteLawyer === "function") {
+                await deleteLawyer(myProfile._id);
+            }
+            setMyProfile(null);
+            setIsEditing(true);
+            setIsDeleteModalOpen(false); // Close modal on success
+            toast.success("Lawyer Profile Deleted!");
+        } catch (error) {
+            console.error("Failed to delete legal profile:", error);
+            toast.error("Failed to delete profile");
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
     // Form Submission
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -181,7 +225,9 @@ export default function LawyerProfileForm({
             await onSaveProfile?.(addData);
 
             if (!myProfile) {
+
                 // Creating new profile
+
                 const resData = await addLawyer(addData);
                 if (resData?.insertedId || resData?._id) {
                     const createdProfile = {
@@ -191,33 +237,38 @@ export default function LawyerProfileForm({
                     setMyProfile(createdProfile);
                     populateForm(createdProfile);
                     toast.success("Lawyer Profile Created!");
+                    router.push("/lawyers");
                 }
             } else {
+
                 // Updating existing profile
+
                 const updatedRes = await updateLawyer(addData, myProfile._id);
                 const updatedProfile = { ...myProfile, ...addData };
                 setMyProfile(updatedProfile);
                 populateForm(updatedProfile);
-                toast.success("Lawyer Profile Updated!");
+                toast.success("Congratulations! Lawyer Profile Updated!");
             }
 
             // Close form and show Card View
+
             setIsEditing(false);
         } catch (error) {
             console.error("Failed to save legal profile", error);
-            toast.error("Failed to save profile");
+            toast.error("Ahh! Failed to save profile!");
         } finally {
             setIsSubmitting(false);
         }
     };
 
     // 1. LOADING SPINNER WHILE FETCHING
+
     if (isLoading) {
         return (
             <div className="mt-16 mx-6 mb-8">
                 <LawyerCardSkeleton />
             </div>
-            
+
             // <div className="flex flex-col items-center justify-center h-[80vh] gap-3">
             //     <Loader2 size={56} className="animate-spin text-secondary" />
             // </div>
@@ -225,6 +276,7 @@ export default function LawyerProfileForm({
     }
 
     // 2. UNVERIFIED STATE CARD
+
     if (!isVerified) {
         return (
             <motion.div
@@ -264,7 +316,9 @@ export default function LawyerProfileForm({
 
     return (
         <div className="max-w-4xl mx-auto my-6 space-y-8">
+
             {/* 3. CARD VIEW (Show when myProfile exists and not editing) */}
+
             {myProfile && !isEditing && (
                 <motion.div
                     initial={{ opacity: 0, scale: 0.98 }}
@@ -273,7 +327,9 @@ export default function LawyerProfileForm({
                 >
                     <div className="p-6 md:p-8">
                         <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
+
                             {/* Profile Image */}
+
                             <div className="relative h-32 w-32 shrink-0 rounded-2xl overflow-hidden border-2 border-secondary/40 shadow-md">
                                 {myProfile.lawyerImage ? (
                                     <Image
@@ -291,6 +347,7 @@ export default function LawyerProfileForm({
                             </div>
 
                             {/* Details */}
+
                             <div className="flex-1 space-y-3">
                                 <div className="flex flex-wrap items-center justify-between gap-2">
                                     <div>
@@ -345,8 +402,9 @@ export default function LawyerProfileForm({
                         </div>
                     </div>
 
-                    {/* Edit Button Divider */}
-                    <div className="relative my-4 border-t-2 border-dashed border-secondary/30 flex justify-center items-center">
+                    {/* Edit & Delete Button Divider */}
+
+                    <div className="relative my-4 border-t-2 border-dashed border-secondary/30 flex justify-center items-center gap-3">
                         <button
                             onClick={() => {
                                 populateForm(myProfile);
@@ -357,12 +415,36 @@ export default function LawyerProfileForm({
                             <Edit3 size={14} />
                             Edit Legal Profile
                         </button>
+
+                        <button
+                            type="button"
+                            onClick={openDeleteModal}
+                            disabled={isDeleting}
+                            className="absolute -top-5 right-6 px-4 py-2 rounded-full bg-rose-600 text-white font-extrabold text-xs uppercase tracking-wider flex items-center gap-2 shadow-lg hover:bg-rose-700 transition-all transform hover:scale-105 cursor-pointer disabled:opacity-50"
+                        >
+                            {isDeleting ? (
+                                <Loader2 size={14} className="animate-spin" />
+                            ) : (
+                                <Trash2 size={14} />
+                            )}
+                            Delete
+                        </button>
+
+                        {/* HeroUI Confirmation Modal */}
+                        
+                        <DeleteConfirmationModal
+                            isOpen={isDeleteModalOpen}
+                            onClose={() => setIsDeleteModalOpen(false)}
+                            onConfirm={confirmDelete}
+                            isDeleting={isDeleting}
+                        />
                     </div>
                     <div className="h-6" />
                 </motion.div>
             )}
 
             {/* 4. FORM VIEW (Show if user is editing OR has no profile yet) */}
+
             <AnimatePresence>
                 {(isEditing || !myProfile) && (
                     <motion.div
@@ -391,7 +473,9 @@ export default function LawyerProfileForm({
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-6">
+
                             {/* Image Upload Area */}
+
                             <div>
                                 <label className="block text-xs font-bold uppercase tracking-wider text-text-secondary mb-2">
                                     Profile Picture (ImgBB)
@@ -429,6 +513,7 @@ export default function LawyerProfileForm({
                             </div>
 
                             {/* Form Fields Grid */}
+
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-md font-bold text-text mb-2">

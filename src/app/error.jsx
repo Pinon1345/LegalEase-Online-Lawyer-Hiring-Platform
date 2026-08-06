@@ -46,7 +46,7 @@ export default function Error({ error, reset }) {
                         initial={{ opacity: 0, scale: 0.5 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 0.5, delay: 0.2 }}
-                        className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-surface/90 dark:bg-neutral-900/90 border border-rose-500/30 text-rose-500 shadow-2xl backdrop-blur-xl z-20"
+                        className="mt-3 ml-0.5 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-surface/90 dark:bg-neutral-900/90 border border-rose-500/30 text-rose-500 shadow-2xl backdrop-blur-xl z-20"
                     >
                         <AlertTriangle size={42} className="drop-shadow-[0_0_12px_rgba(244,63,94,0.4)] text-rose-500" />
                     </motion.div>
