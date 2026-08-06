@@ -38,6 +38,7 @@ import {
 import Image from "next/image";
 
 import { useSession } from "@/lib/auth-client";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 // Mock Analytics Data
 
@@ -110,7 +111,7 @@ export default function LawyerDashboardOverview() {
 
     // Get user Session
 
-    const { data: session } = useSession();
+    const { data: session, isPending } = useSession();
     const user = session?.user;
 
     return (
@@ -130,7 +131,9 @@ export default function LawyerDashboardOverview() {
                         </div>
                         <div className="text-text tracking-tight mt-3 mb-2">
                             <h1 className="text-xl md:text-3xl font-bold mb-1">Welcome Back,</h1>
-                            <h1 className="text-2xl md:text-4xl text-secondary font-extrabold">Adv. {user?.name}</h1>
+                            <h1 className="text-2xl md:text-4xl text-secondary font-extrabold">
+                                {isPending ? <Skeleton className="h-9 w-48 rounded-lg inline-block align-middle" /> : `Adv. ${user?.name}`}
+                            </h1>
                         </div>
                         <p className="text-text-secondary text-sm md:text-base mt-1 max-w-xl">
                             Here is what is happening with your legal practice today. You have <span className="text-text font-bold">3 pending client requests</span> to review.
@@ -381,38 +384,55 @@ export default function LawyerDashboardOverview() {
                         </div>
 
                         <div className="space-y-4">
-                            {upcomingAppointments.map((appointment) => (
-                                <div
-                                    key={appointment.id}
-                                    className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-neutral-900/40 border border-border/50 hover:border-secondary/30 transition"
-                                >
-                                    <div className="flex items-center gap-3.5">
-                                        <Image
-                                            src={appointment.avatar}
-                                            alt={appointment.clientName}
-                                            width={800}
-                                            height={800}
-                                            className="h-11 w-11 rounded-full object-cover border border-secondary/30"
-                                        />
-                                        <div>
-                                            <h4 className="font-bold text-sm text-text">{appointment.clientName}</h4>
-                                            <p className="text-xs text-text-secondary">{appointment.caseType}</p>
-                                            <div className="flex items-center gap-3 mt-1.5 text-[11px] text-text-secondary">
-                                                <span className="flex items-center gap-1 text-secondary font-semibold">
-                                                    <Clock size={12} /> {appointment.time}
-                                                </span>
-                                                <span className="flex items-center gap-1">
-                                                    <Video size={12} /> {appointment.type}
-                                                </span>
+                            {isPending
+                                ? [1, 2, 3].map((item) => (
+                                    <div
+                                        key={item}
+                                        className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-neutral-900/40 border border-border/50"
+                                    >
+                                        <div className="flex items-center gap-3.5">
+                                            <Skeleton className="h-11 w-11 rounded-full shrink-0" />
+                                            <div className="space-y-2">
+                                                <Skeleton className="h-4 w-32" />
+                                                <Skeleton className="h-3 w-24" />
+                                                <Skeleton className="h-3 w-40" />
                                             </div>
                                         </div>
+                                        <Skeleton className="h-8 w-20 rounded-xl shrink-0" />
                                     </div>
+                                ))
+                                : upcomingAppointments.map((appointment) => (
+                                    <div
+                                        key={appointment.id}
+                                        className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-neutral-900/40 border border-border/50 hover:border-secondary/30 transition"
+                                    >
+                                        <div className="flex items-center gap-3.5">
+                                            <Image
+                                                src={appointment.avatar}
+                                                alt={appointment.clientName}
+                                                width={800}
+                                                height={800}
+                                                className="h-11 w-11 rounded-full object-cover border border-secondary/30"
+                                            />
+                                            <div>
+                                                <h4 className="font-bold text-sm text-text">{appointment.clientName}</h4>
+                                                <p className="text-xs text-text-secondary">{appointment.caseType}</p>
+                                                <div className="flex items-center gap-3 mt-1.5 text-[11px] text-text-secondary">
+                                                    <span className="flex items-center gap-1 text-secondary font-semibold">
+                                                        <Clock size={12} /> {appointment.time}
+                                                    </span>
+                                                    <span className="flex items-center gap-1">
+                                                        <Video size={12} /> {appointment.type}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
 
-                                    <button className="px-3 py-2 rounded-xl bg-secondary/10 hover:bg-secondary text-secondary hover:text-surface-dark border border-secondary/30 text-xs font-bold transition">
-                                        Join Call
-                                    </button>
-                                </div>
-                            ))}
+                                        <button className="px-3 py-2 rounded-xl bg-secondary/10 hover:bg-secondary text-secondary hover:text-surface-dark border border-secondary/30 text-xs font-bold transition">
+                                            Join Call
+                                        </button>
+                                    </div>
+                                ))}
                         </div>
                     </div>
                 </div>
@@ -432,36 +452,57 @@ export default function LawyerDashboardOverview() {
                         </div>
 
                         <div className="space-y-4">
-                            {pendingRequests.map((req) => (
-                                <div
-                                    key={req.id}
-                                    className="p-4 rounded-2xl bg-neutral-900/40 border border-border/50 space-y-3"
-                                >
-                                    <div className="flex items-center justify-between">
-                                        <h4 className="font-extrabold text-sm text-text">{req.clientName}</h4>
-                                        <span className="text-xs font-extrabold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">
-                                            {req.budget}
-                                        </span>
-                                    </div>
-
-                                    <p className="text-xs text-text-secondary line-clamp-2 leading-relaxed">
-                                        &quot;{req.issue}&quot;
-                                    </p>
-
-                                    <div className="flex items-center justify-between pt-2 border-t border-border/40">
-                                        <span className="text-[11px] text-text-secondary">Requested: {req.requestedDate}</span>
-
-                                        <div className="flex items-center gap-2">
-                                            <button className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-danger/10 text-danger hover:bg-danger hover:text-white text-xs font-bold transition">
-                                                <XCircle size={14} /> Decline
-                                            </button>
-                                            <button className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-500 text-surface-dark font-bold text-xs hover:bg-emerald-400 transition shadow-md shadow-emerald-500/20">
-                                                <CheckCircle2 size={14} /> Accept Request
-                                            </button>
+                            {isPending
+                                ? [1, 2].map((item) => (
+                                    <div
+                                        key={item}
+                                        className="p-4 rounded-2xl bg-neutral-900/40 border border-border/50 space-y-3"
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <Skeleton className="h-4 w-28" />
+                                            <Skeleton className="h-6 w-20 rounded-lg" />
+                                        </div>
+                                        <Skeleton className="h-3 w-full" />
+                                        <Skeleton className="h-3 w-4/5" />
+                                        <div className="flex items-center justify-between pt-2 border-t border-border/40">
+                                            <Skeleton className="h-3 w-24" />
+                                            <div className="flex items-center gap-2">
+                                                <Skeleton className="h-7 w-16 rounded-xl" />
+                                                <Skeleton className="h-7 w-24 rounded-xl" />
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))
+                                : pendingRequests.map((req) => (
+                                    <div
+                                        key={req.id}
+                                        className="p-4 rounded-2xl bg-neutral-900/40 border border-border/50 space-y-3"
+                                    >
+                                        <div className="flex items-center justify-between">
+                                            <h4 className="font-extrabold text-sm text-text">{req.clientName}</h4>
+                                            <span className="text-xs font-extrabold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">
+                                                {req.budget}
+                                            </span>
+                                        </div>
+
+                                        <p className="text-xs text-text-secondary line-clamp-2 leading-relaxed">
+                                            &quot;{req.issue}&quot;
+                                        </p>
+
+                                        <div className="flex items-center justify-between pt-2 border-t border-border/40">
+                                            <span className="text-[11px] text-text-secondary">Requested: {req.requestedDate}</span>
+
+                                            <div className="flex items-center gap-2">
+                                                <button className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-danger/10 text-danger hover:bg-danger hover:text-white text-xs font-bold transition">
+                                                    <XCircle size={14} /> Decline
+                                                </button>
+                                                <button className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-emerald-500 text-surface-dark font-bold text-xs hover:bg-emerald-400 transition shadow-md shadow-emerald-500/20">
+                                                    <CheckCircle2 size={14} /> Accept Request
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
                         </div>
                     </div>
                 </div>
