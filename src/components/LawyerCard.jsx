@@ -35,6 +35,7 @@ export default function LawyerCard({ lawyer }) {
         availabilityStatus,
     } = lawyer;
 
+
     // Normalizing MongoDB _id string standard
 
     const lawyerId = typeof _id === "object" && _id?.$oid ? _id.$oid : _id;
@@ -97,8 +98,11 @@ export default function LawyerCard({ lawyer }) {
                 </div>
 
                 {/* Content Body */}
+
                 <div className="space-y-3">
+
                     {/* Specialization & Experience Tag */}
+
                     <div className="flex items-center justify-between text-xs">
                         <span className="inline-flex items-center gap-1 rounded-lg bg-secondary/10 px-2.5 py-1 font-bold text-secondary border border-secondary/20">
                             <Briefcase size={12} />
@@ -111,11 +115,13 @@ export default function LawyerCard({ lawyer }) {
                     </div>
 
                     {/* Lawyer Name */}
+
                     <h3 className="text-xl font-extrabold text-text line-clamp-1 group-hover:text-secondary transition-colors">
                         {lawyerName}
                     </h3>
 
                     {/* Rating & Reviews */}
+
                     <div className="flex items-center gap-2">
                         <div className="flex items-center text-amber-400">
                             <Star size={16} fill="currentColor" />
@@ -128,7 +134,8 @@ export default function LawyerCard({ lawyer }) {
                         </span>
                     </div>
 
-                    {/* Metadata details */}
+                    {/* Metadata details (Location & Languages) */}
+
                     <div className="space-y-1.5 pt-2 border-t border-border/40 text-xs text-text-secondary">
                         {location && (
                             <div className="flex items-center gap-1.5 truncate mt-2">
@@ -147,7 +154,10 @@ export default function LawyerCard({ lawyer }) {
                 </div>
             </div>
 
+
+
             {/* Card Action Button */}
+            
             <div className="mt-5 pt-3">
                 <Link
                     href={`/lawyers/${lawyerId}`}

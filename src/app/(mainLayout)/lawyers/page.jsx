@@ -4,7 +4,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import LawyerCard from "@/components/LawyerCard";
 import { Search, SlidersHorizontal, ArrowUpDown, Filter, Scale, AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/Skeleton";
-import { getLawyers } from "@/lib/api/lawyers/data"; 
+import { getLawyers } from "@/lib/api/lawyers/data";
 
 // Predefined Legal Specializations
 
@@ -33,7 +33,7 @@ export default function BrowseLawyersPage() {
     const [selectedAvailability, setSelectedAvailability] = useState("All");
     const [sortBy, setSortBy] = useState("default");
 
-    // Fetch Lawyers using your data.js utility
+    // Fetch Lawyers using data.js utility
 
     useEffect(() => {
         const loadLawyers = async () => {
@@ -220,10 +220,15 @@ export default function BrowseLawyersPage() {
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-16 mb-8">
                     {filteredLawyers.map((lawyer) => (
+
+                        // Lawyer Card Component
+
                         <LawyerCard
                             key={lawyer._id?.$oid || lawyer._id || lawyer.userId}
                             lawyer={lawyer}
                         />
+
+
                     ))}
                 </div>
             )}

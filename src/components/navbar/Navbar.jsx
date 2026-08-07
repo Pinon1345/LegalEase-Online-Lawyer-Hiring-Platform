@@ -54,6 +54,7 @@ export default function Navbar() {
 
     console.log("My Session info:", session);
 
+
     return (
         <header
             className={`glass sticky top-0 z-50 transition-all duration-300 rounded-b-4xl shadow-md shadow-amber-300 dark:shadow-amber-200 ${isScrolled ? "shadow-lg shadow-black/10" : ""}`}
@@ -160,7 +161,7 @@ export default function Navbar() {
                                             </Link>
 
                                             <Link
-                                                href="/dashboard"
+                                                href={`/dashboard/${user.role}`}
                                                 className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium text-text-secondary hover:bg-primary/15 hover:text-primary transition-colors"
                                             >
                                                 <LayoutDashboard size={16} />

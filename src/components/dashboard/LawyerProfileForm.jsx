@@ -33,7 +33,6 @@ export default function LawyerProfileForm({
     onDeleteProfile,
 }) {
     const router = useRouter();
-    const isVerified = true;
 
     // Loading & state control
     const [isLoading, setIsLoading] = useState(true);
@@ -47,6 +46,11 @@ export default function LawyerProfileForm({
     // Profile State
     const [myProfile, setMyProfile] = useState(
         initialProfile && initialProfile._id ? initialProfile : null
+    );
+
+    // Verification State: If profile exists or paid, set to true. For new profile creation, default to false.
+    const [isVerified, setIsVerified] = useState(
+        initialProfile && (initialProfile._id || initialProfile.lawyerName) ? true : false
     );
 
     // Form state
@@ -103,15 +107,18 @@ export default function LawyerProfileForm({
                 if (hasValidProfile) {
                     setMyProfile(fetchedProfile);
                     populateForm(fetchedProfile);
+                    setIsVerified(true);
                     setIsEditing(false); // Show Card View
                 } else {
                     // If it's an empty object {} or null, force Form View
                     setMyProfile(null);
+                    setIsVerified(false); // Require Payment First
                     setIsEditing(true); // Show Form View for Creation
                 }
             } catch (error) {
                 console.error("Failed to fetch lawyer profile:", error);
                 setMyProfile(null);
+                setIsVerified(false);
                 setIsEditing(true);
             } finally {
                 setIsLoading(false);
@@ -163,6 +170,7 @@ export default function LawyerProfileForm({
                 await deleteLawyer(myProfile._id);
             }
             setMyProfile(null);
+            setIsVerified(false);
             setIsEditing(true);
             setIsDeleteModalOpen(false);
             toast.success("Lawyer Profile Deleted!");
@@ -230,6 +238,14 @@ export default function LawyerProfileForm({
         }
     };
 
+    // Payment verification callback when user pays via UnverifiedState
+    const handleVerifyPaymentSuccess = () => {
+        if (onVerifyPayment) {
+            onVerifyPayment();
+        }
+        setIsVerified(true);
+    };
+
     // 1. Loading State
     if (isLoading) {
         return (
@@ -239,9 +255,9 @@ export default function LawyerProfileForm({
         );
     }
 
-    // 2. Unverified State
+    // 2. Unverified State (Shows first when user has no existing profile)
     if (!isVerified) {
-        return <UnverifiedState onVerifyPayment={onVerifyPayment} />;
+        return <UnverifiedState onVerifyPayment={handleVerifyPaymentSuccess} />;
     }
 
     return (
