@@ -28,6 +28,7 @@ const SPECIALIZATION_OPTIONS = [
 export default function LawyerProfileForm({
     profile: initialProfile,
     user,
+    isVerified: externalVerified = false,
     onSaveProfile,
     onVerifyPayment,
     onDeleteProfile,
@@ -48,10 +49,13 @@ export default function LawyerProfileForm({
         initialProfile && initialProfile._id ? initialProfile : null
     );
 
-    // Verification State: If profile exists or paid, set to true. For new profile creation, default to false.
+    // Verification State
     const [isVerified, setIsVerified] = useState(
         initialProfile && (initialProfile._id || initialProfile.lawyerName) ? true : false
     );
+
+    // Derived Verification Status (Avoids setState in useEffect warning)
+    const effectiveIsVerified = isVerified || externalVerified;
 
     // Form state
     const [formData, setFormData] = useState({
@@ -98,7 +102,7 @@ export default function LawyerProfileForm({
             try {
                 const fetchedProfile = await lawyerProfile(user.id);
 
-                // FIX: Check if the profile exists AND has a valid _id or lawyerName
+                // Check if the profile exists AND has a valid _id or lawyerName
                 const hasValidProfile =
                     fetchedProfile &&
                     !fetchedProfile.error &&
@@ -110,9 +114,9 @@ export default function LawyerProfileForm({
                     setIsVerified(true);
                     setIsEditing(false); // Show Card View
                 } else {
-                    // If it's an empty object {} or null, force Form View
+                    // If no profile found
                     setMyProfile(null);
-                    setIsVerified(false); // Require Payment First
+                    setIsVerified(false);
                     setIsEditing(true); // Show Form View for Creation
                 }
             } catch (error) {
@@ -238,14 +242,6 @@ export default function LawyerProfileForm({
         }
     };
 
-    // Payment verification callback when user pays via UnverifiedState
-    const handleVerifyPaymentSuccess = () => {
-        if (onVerifyPayment) {
-            onVerifyPayment();
-        }
-        setIsVerified(true);
-    };
-
     // 1. Loading State
     if (isLoading) {
         return (
@@ -255,9 +251,9 @@ export default function LawyerProfileForm({
         );
     }
 
-    // 2. Unverified State (Shows first when user has no existing profile)
-    if (!isVerified) {
-        return <UnverifiedState onVerifyPayment={handleVerifyPaymentSuccess} />;
+    // 2. Unverified State (Uses derived effectiveIsVerified status)
+    if (!effectiveIsVerified) {
+        return <UnverifiedState onVerifyPayment={onVerifyPayment} />;
     }
 
     return (

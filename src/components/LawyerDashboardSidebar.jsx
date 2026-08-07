@@ -111,6 +111,7 @@ export default function LawyerDashboardSidebar({
     onCloseMobile,
     onToggleCollapse,
     onSignOut,
+    isVerified
 }) {
     return (
         <div className="flex flex-col h-full justify-between p-4 overflow-y-auto no-scrollbar">
@@ -199,8 +200,8 @@ export default function LawyerDashboardSidebar({
                                     {user?.name || "Legal Advisor"}
                                 </span>
                                 <span className="text-[11px] text-text-secondary truncate flex items-center gap-1 mt-1">
-                                    <ShieldCheck size={14} className="text-secondary" />
-                                    <p className="uppercase text-[12px]">{user?.role || "Unknown"}</p>
+                                    <ShieldCheck size={14} className="text-secondary shrink-0" />
+                                    <p className="uppercase text-[12px] font-semibold text-secondary">{user?.role || "Unknown"}</p>
                                 </span>
                             </div>
                         )}

@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { ShieldAlert, CreditCard } from "lucide-react";
 
 export default function UnverifiedState({ onVerifyPayment }) {
+
     return (
         <motion.div
             initial={{ opacity: 0, y: 15 }}
@@ -21,7 +22,8 @@ export default function UnverifiedState({ onVerifyPayment }) {
                 Verification Required
             </h2>
             <p className="text-text-secondary text-base max-w-lg mx-auto leading-relaxed mb-8">
-                Please pay the one-time verification publishing fee to activate your
+                Please pay the one-time verification publishing fee of{" "}
+                <span className="text-secondary font-black">$100.00</span> to activate your
                 professional listing on{" "}
                 <span className="text-secondary font-bold">LegalEase</span> and start
                 receiving client requests.
@@ -33,7 +35,7 @@ export default function UnverifiedState({ onVerifyPayment }) {
                     className="w-full sm:w-auto inline-flex items-center justify-center gap-3 px-8 py-4 rounded-xl bg-secondary text-surface-dark font-extrabold text-base shadow-xl hover:bg-secondary-light transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
                 >
                     <CreditCard size={20} />
-                    Pay One-Time Verification Fee
+                    Pay One-Time Verification Fee ($100.00)
                 </button>
             </div>
         </motion.div>

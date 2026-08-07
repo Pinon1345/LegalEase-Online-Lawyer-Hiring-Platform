@@ -1,28 +1,63 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import toast from "react-hot-toast";
 import LawyerProfileForm from "@/components/dashboard/LawyerProfileForm";
 import { useSession } from "@/lib/auth-client";
 
-export default function ManageLawyerLegalProfile() {
+function LegalProfileContent() {
     const { data: session } = useSession();
     const user = session?.user;
+    const searchParams = useSearchParams();
 
-    // Local state representing the profile (Replace with your SWR/React Query/API hook)
+    // Local state representing the profile
     const [profile, setProfile] = useState(null);
+
+    // Derive verification status directly during render (avoids setState in useEffect warning)
+    const paymentStatus = searchParams.get("payment");
+    const isVerified = paymentStatus === "success";
+
+    // Side-effects (Toasts) only
+    useEffect(() => {
+        if (paymentStatus === "success") {
+            toast.success("Payment successful! You can now create your legal profile.", {
+                id: "stripe-success-toast",
+            });
+        } else if (paymentStatus === "cancelled") {
+            toast.error("Payment was cancelled or unsuccessful. Please try again to verify.", {
+                id: "stripe-cancel-toast",
+            });
+        }
+    }, [paymentStatus]);
 
     // Save or update profile handler
     const handleSaveProfile = async (profileData) => {
         console.log("Submitting backend payload:", profileData);
-        // Replace with your API call, e.g.:
-        // await fetch('/api/lawyers', { method: 'POST', body: JSON.stringify(profileData) });
         setProfile(profileData);
     };
 
     // Stripe verification payment handler
-    const handleVerifyPayment = () => {
-        // Trigger Stripe checkout session or modal
-        alert("Redirecting to Stripe payment gateway for 1-time verification fee...");
+
+    const updateToVerified = async () => {
+        try {
+            const res = await fetch("/api/checkout_sessions", {
+                method: "POST",
+            });
+            const data = await res.json();
+
+            if (data.url) {
+
+                // Redirect user directly to Stripe Checkout Hosted Page
+                
+                window.location.href = data.url;
+            } else {
+                toast.error(data.error || "Failed to initiate checkout");
+            }
+        } catch (error) {
+            console.error("Stripe error:", error);
+            toast.error("Error connecting to payment server");
+        }
     };
 
     return (
@@ -37,9 +72,18 @@ export default function ManageLawyerLegalProfile() {
             <LawyerProfileForm
                 profile={profile}
                 user={user}
+                isVerified={isVerified}
                 onSaveProfile={handleSaveProfile}
-                onVerifyPayment={handleVerifyPayment}
+                onVerifyPayment={updateToVerified}
             />
         </div>
+    );
+}
+
+export default function ManageLawyerLegalProfile() {
+    return (
+        <Suspense fallback={<div className="p-8 text-center">Loading legal profile...</div>}>
+            <LegalProfileContent />
+        </Suspense>
     );
 }
