@@ -20,6 +20,7 @@ import {
     Moon,
 } from "lucide-react";
 import { MdOutlineManageHistory } from "react-icons/md";
+import { AiOutlineTransaction } from "react-icons/ai";
 
 // Navigation Items for Client/User Dashboard based on Assignment Spec
 const clientNavItems = [
@@ -30,8 +31,13 @@ const clientNavItems = [
     },
     {
         name: "Hiring History",
-        href: "/dashboard/client/hiring-history",
+        href: "/dashboard/client/my-bookings",
         icon: MdOutlineManageHistory,
+    },
+    {
+        name: "Comment Management",
+        href: "/dashboard/client/comments",
+        icon: MessageSquare,
     },
     {
         name: "Update Profile",
@@ -39,10 +45,11 @@ const clientNavItems = [
         icon: UserCheck,
     },
     {
-        name: "Comment Management",
-        href: "/dashboard/client/comments",
-        icon: MessageSquare,
+        name: "My Transactions",
+        href: "/dashboard/client/my-transactions",
+        icon: AiOutlineTransaction,
     },
+
 ];
 
 // Sidebar Theme Toggle Component
