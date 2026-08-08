@@ -192,7 +192,7 @@ export default async function LawyerDetailsPage({ params }) {
 
                 {/* Right Column: Sticky Booking Widget */}
                 <div className="lg:col-span-5 xl:col-span-4">
-                    <BookingWidget lawyer={lawyer} />
+                    <BookingWidget lawyer={lawyer} lawyerId={lawyer?._id} />
                 </div>
             </div>
         </div>

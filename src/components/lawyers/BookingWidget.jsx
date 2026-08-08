@@ -20,7 +20,7 @@ import toast from "react-hot-toast";
 import { useSession } from "@/lib/auth-client";
 import Link from "next/link";
 
-export default function BookingWidget({ lawyer }) {
+export default function BookingWidget({ lawyer, lawyerId }) {
     const [selectedDate, setSelectedDate] = useState("");
     const [selectedTimeSlot, setSelectedTimeSlot] = useState("10:00 AM");
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -71,16 +71,38 @@ export default function BookingWidget({ lawyer }) {
     const handleConfirmBooking = async () => {
         setIsSubmitting(true);
         try {
+            const paymentData = {
+                type: "booking",
+                totalAmount,
+                lawyerId,
+                lawyerName: lawyer?.lawyerName,
+                selectedDate,
+                selectedTimeSlot,
+            };
 
-            // Simulate backend booking API request
+            const res = await fetch("/api/checkout_sessions", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(paymentData),
+            });
 
-            await new Promise((resolve) => setTimeout(resolve, 1200));
+            const data = await res.json();
 
-            toast.success(`Hiring request sent to ${lawyer?.lawyerName}!`);
-            setIsModalOpen(false);
+            if (res.ok && data.url) {
+                toast.success("Redirecting to checkout...");
+
+                // Redirect user directly to Stripe Checkout Hosted Page
+                
+                window.location.href = data.url;
+            } else {
+                toast.error(data.error || "Failed to initiate checkout");
+                setIsSubmitting(false);
+            }
         } catch (error) {
-            toast.error("Failed to send booking request.");
-        } finally {
+            console.error("Stripe error:", error);
+            toast.error("Error connecting to payment server");
             setIsSubmitting(false);
         }
     };

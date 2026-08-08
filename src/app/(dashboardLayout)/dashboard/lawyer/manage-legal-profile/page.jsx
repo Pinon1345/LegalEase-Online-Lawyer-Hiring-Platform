@@ -51,7 +51,7 @@ function LegalProfileContent() {
     }, [paymentStatus, sessionId, user?.id]);
 
     // Save or update profile handler
-    
+
     const handleSaveProfile = async (profileData) => {
         console.log("Submitting backend payload:", profileData);
         setProfile(profileData);
@@ -63,6 +63,10 @@ function LegalProfileContent() {
         try {
             const res = await fetch("/api/checkout_sessions", {
                 method: "POST",
+                headers: {
+                    "Content-type": "application/json",
+                },
+                body: JSON.stringify({ type: "verification" })
             });
             const data = await res.json();
 
