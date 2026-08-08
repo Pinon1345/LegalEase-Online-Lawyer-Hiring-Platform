@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Scale, Menu } from "lucide-react";
 
@@ -15,16 +15,79 @@ import ClientDashboardSidebar from "@/components/ClientDashboardSidebar";
 export default function DashboardLayout({ children }) {
     const pathname = usePathname();
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { data: session } = useSession();
 
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isMobileOpen, setIsMobileOpen] = useState(false);
 
+    // Initialize state from local cache if available
+
+    const [isVerified, setIsVerified] = useState(() => {
+        if (typeof window !== "undefined") {
+            return localStorage.getItem("lawyer_is_verified") === "true";
+        }
+        return false;
+    });
+
     const user = session?.user;
     const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : "U";
 
+    // Fetch Verification Status
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const checkVerification = async () => {
+            if (!user?.id) return;
+
+            try {
+                const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000";
+
+                const res = await fetch(`${baseUrl}/api/lawyers/user/${user.id}?t=${Date.now()}`, {
+                    cache: "no-store",
+                    headers: {
+                        "Cache-Control": "no-cache, no-store, must-revalidate",
+                        "Pragma": "no-cache"
+                    }
+                });
+
+                if (!res.ok) return;
+
+                const data = await res.json();
+                const verifiedStatus = Boolean(data?.isVerified);
+
+                if (isMounted) {
+                    setIsVerified(verifiedStatus);
+                    if (typeof window !== "undefined") {
+                        localStorage.setItem("lawyer_is_verified", String(verifiedStatus));
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching verification status:", error);
+            }
+        };
+
+        checkVerification();
+
+        // Listen for immediate events from payment modal & tab focus
+
+        const handleCustomUpdate = () => checkVerification();
+        window.addEventListener("lawyer_verified_updated", handleCustomUpdate);
+        window.addEventListener("focus", handleCustomUpdate);
+
+        return () => {
+            isMounted = false;
+            window.removeEventListener("lawyer_verified_updated", handleCustomUpdate);
+            window.removeEventListener("focus", handleCustomUpdate);
+        };
+    }, [user?.id, searchParams, pathname]);
+
     const handleSignOut = async () => {
         setIsMobileOpen(false);
+        if (typeof window !== "undefined") {
+            localStorage.removeItem("lawyer_is_verified");
+        }
         await authClient.signOut({
             fetchOptions: {
                 onSuccess: () => {
@@ -43,12 +106,11 @@ export default function DashboardLayout({ children }) {
         pathname,
         user,
         userInitial,
+        isVerified,
         onCloseMobile: () => setIsMobileOpen(false),
         onToggleCollapse: () => setIsCollapsed((prev) => !prev),
         onSignOut: handleSignOut,
     });
-
-
 
 
     // Dynamic Dashboard Sidebar rendering based on ROLE

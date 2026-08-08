@@ -12,26 +12,46 @@ function LegalProfileContent() {
     const searchParams = useSearchParams();
 
     // Local state representing the profile
+
     const [profile, setProfile] = useState(null);
 
     // Derive verification status directly during render (avoids setState in useEffect warning)
+
     const paymentStatus = searchParams.get("payment");
+    const sessionId = searchParams.get("session_id");
     const isVerified = paymentStatus === "success";
 
-    // Side-effects (Toasts) only
+    // Side-effects (Toasts & Payment Recording)
+
     useEffect(() => {
         if (paymentStatus === "success") {
             toast.success("Payment successful! You can now create your legal profile.", {
                 id: "stripe-success-toast",
             });
+
+            if (user?.id) {
+                fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:5000'}/api/lawyers/verify-payment`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ userId: user.id, sessionId }),
+                })
+                    .then(() => {
+                        // Dispatch event to instantly update layout sidebar verification status
+                        window.dispatchEvent(new Event("lawyer_verified_updated"));
+                    })
+                    .catch((err) => console.error("Error storing payment record:", err));
+            } else {
+                window.dispatchEvent(new Event("lawyer_verified_updated"));
+            }
         } else if (paymentStatus === "cancelled") {
             toast.error("Payment was cancelled or unsuccessful. Please try again to verify.", {
                 id: "stripe-cancel-toast",
             });
         }
-    }, [paymentStatus]);
+    }, [paymentStatus, sessionId, user?.id]);
 
     // Save or update profile handler
+    
     const handleSaveProfile = async (profileData) => {
         console.log("Submitting backend payload:", profileData);
         setProfile(profileData);
@@ -49,7 +69,7 @@ function LegalProfileContent() {
             if (data.url) {
 
                 // Redirect user directly to Stripe Checkout Hosted Page
-                
+
                 window.location.href = data.url;
             } else {
                 toast.error(data.error || "Failed to initiate checkout");
@@ -86,4 +106,4 @@ export default function ManageLawyerLegalProfile() {
             <LegalProfileContent />
         </Suspense>
     );
-}
+};

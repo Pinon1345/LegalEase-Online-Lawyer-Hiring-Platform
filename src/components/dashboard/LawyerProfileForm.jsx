@@ -100,7 +100,11 @@ export default function LawyerProfileForm({
             }
 
             try {
-                const fetchedProfile = await lawyerProfile(user.id);
+                const response = await lawyerProfile(user.id);
+
+                // Handle both response formats
+                const fetchedProfile = response?.profile !== undefined ? response.profile : response;
+                const verificationStatus = response?.isVerified || fetchedProfile?.isVerified;
 
                 // Check if the profile exists AND has a valid _id or lawyerName
                 const hasValidProfile =
@@ -116,7 +120,7 @@ export default function LawyerProfileForm({
                 } else {
                     // If no profile found
                     setMyProfile(null);
-                    setIsVerified(false);
+                    setIsVerified(Boolean(verificationStatus));
                     setIsEditing(true); // Show Form View for Creation
                 }
             } catch (error) {
@@ -174,7 +178,7 @@ export default function LawyerProfileForm({
                 await deleteLawyer(myProfile._id);
             }
             setMyProfile(null);
-            setIsVerified(false);
+            setIsVerified(true);
             setIsEditing(true);
             setIsDeleteModalOpen(false);
             toast.success("Lawyer Profile Deleted!");
@@ -292,4 +296,4 @@ export default function LawyerProfileForm({
             </AnimatePresence>
         </div>
     );
-}
+};

@@ -18,6 +18,7 @@ import {
     ChevronLeft,
     ChevronRight,
     ShieldCheck,
+    ShieldAlert,
     X,
     Sun,
     Moon,
@@ -200,8 +201,21 @@ export default function LawyerDashboardSidebar({
                                     {user?.name || "Legal Advisor"}
                                 </span>
                                 <span className="text-[11px] text-text-secondary truncate flex items-center gap-1 mt-1">
-                                    <ShieldCheck size={14} className="text-secondary shrink-0" />
-                                    <p className="uppercase text-[12px] font-semibold text-secondary">{user?.role || "Unknown"}</p>
+                                    {isVerified ? (
+                                        <>
+                                            <ShieldCheck size={14} className="text-emerald-500 shrink-0" />
+                                            <p className="uppercase text-[11px] font-bold text-emerald-500 tracking-wider">
+                                                Verified Lawyer
+                                            </p>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <ShieldAlert size={14} className="text-amber-500 shrink-0" />
+                                            <p className="uppercase text-[11px] font-semibold text-amber-500 tracking-wider">
+                                                Unverified Lawyer
+                                            </p>
+                                        </>
+                                    )}
                                 </span>
                             </div>
                         )}
@@ -276,4 +290,4 @@ export default function LawyerDashboardSidebar({
             </div>
         </div>
     );
-}
+};
