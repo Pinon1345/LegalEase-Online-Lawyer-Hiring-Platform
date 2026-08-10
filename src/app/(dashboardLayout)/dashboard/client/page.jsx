@@ -1,4 +1,6 @@
-import React from 'react';
+"use client";
+
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
     Calendar,
@@ -16,9 +18,25 @@ import {
     CheckCircle2
 } from 'lucide-react';
 import Image from 'next/image';
+import { ActivityListSkeleton, BookingCardSkeleton, StatCardSkeleton } from '@/components/ui/Skeleton';
+
 
 const ClientDashboardOverviewPage = () => {
+
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Simulate async data loading
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsLoading(false);
+        }, 1200);
+
+        return () => clearTimeout(timer);
+    }, []);
+
     // Mock user & statistics data
+
     const clientStats = {
         activeConsultations: 2,
         completedSessions: 8,
@@ -34,7 +52,7 @@ const ClientDashboardOverviewPage = () => {
             date: 'Sept 02, 2026',
             time: '06:00 PM',
             status: 'Confirmed',
-            avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=150&auto=format&fit=crop&q=80'
+            avatar: 'https://media.istockphoto.com/id/584003738/photo/portrait-of-confident-lawyer-against-bookshelf.webp?a=1&b=1&s=612x612&w=0&k=20&c=0VNqvhaf45pJXYDGvUKUIP9ymmNm1JtvR7NZCgURXLk='
         },
         {
             id: 'b2',
@@ -79,7 +97,6 @@ const ClientDashboardOverviewPage = () => {
 
             {/* Top Welcome Banner */}
             <div className="relative overflow-hidden rounded-3xl bg-linear-to-r from-neutral-900/10 via-neutral-800/10 to-neutral-900/10 dark:from-neutral-900 dark:via-neutral-800 dark:to-neutral-900 border border-secondary/20 p-6 sm:p-10 shadow-2xl">
-                {/* Ambient Glow background */}
                 <div className="absolute top-0 right-0 w-96 h-96 bg-secondary/10 rounded-full blur-3xl pointer-events-none" />
                 <div className="absolute bottom-0 left-1/3 w-64 h-64 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
 
@@ -108,56 +125,58 @@ const ClientDashboardOverviewPage = () => {
                 </div>
             </div>
 
-            {/* Key Metrics Stats Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-
-                {/* Stat 1 */}
-                <div className="rounded-2xl p-5 border border-secondary/15 bg-surface/80 dark:bg-neutral-900/60 backdrop-blur-xl shadow-lg flex items-center justify-between group hover:border-secondary/40 transition-all">
-                    <div>
-                        <p className="text-xs font-bold text-text-secondary uppercase tracking-wider">Upcoming Sessions</p>
-                        <p className="text-2xl sm:text-3xl font-black text-text mt-1">{clientStats.activeConsultations}</p>
+            {/* Key Metrics Stats Grid (Shows StatCardSkeleton when loading) */}
+            {isLoading ? (
+                <StatCardSkeleton count={4} />
+            ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                    {/* Stat 1 */}
+                    <div className="rounded-2xl p-5 border border-secondary/15 bg-surface/80 dark:bg-neutral-900/60 backdrop-blur-xl shadow-lg flex items-center justify-between group hover:border-secondary/40 transition-all">
+                        <div>
+                            <p className="text-xs font-bold text-text-secondary uppercase tracking-wider">Upcoming Sessions</p>
+                            <p className="text-2xl sm:text-3xl font-black text-text mt-1">{clientStats.activeConsultations}</p>
+                        </div>
+                        <div className="h-12 w-12 rounded-2xl bg-secondary/10 border border-secondary/20 flex items-center justify-center text-secondary group-hover:scale-110 transition-transform">
+                            <Calendar size={24} />
+                        </div>
                     </div>
-                    <div className="h-12 w-12 rounded-2xl bg-secondary/10 border border-secondary/20 flex items-center justify-center text-secondary group-hover:scale-110 transition-transform">
-                        <Calendar size={24} />
+
+                    {/* Stat 2 */}
+                    <div className="rounded-2xl p-5 border border-secondary/15 bg-surface/80 dark:bg-neutral-900/60 backdrop-blur-xl shadow-lg flex items-center justify-between group hover:border-secondary/40 transition-all">
+                        <div>
+                            <p className="text-xs font-bold text-text-secondary uppercase tracking-wider">Completed Sessions</p>
+                            <p className="text-2xl sm:text-3xl font-black text-text mt-1">{clientStats.completedSessions}</p>
+                        </div>
+                        <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
+                            <UserCheck size={24} />
+                        </div>
+                    </div>
+
+                    {/* Stat 3 */}
+                    <div className="rounded-2xl p-5 border border-secondary/15 bg-surface/80 dark:bg-neutral-900/60 backdrop-blur-xl shadow-lg flex items-center justify-between group hover:border-secondary/40 transition-all">
+                        <div>
+                            <p className="text-xs font-bold text-text-secondary uppercase tracking-wider">Total Investment</p>
+                            <p className="text-2xl sm:text-3xl font-black text-text mt-1">{clientStats.totalSpent}</p>
+                        </div>
+                        <div className="h-12 w-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform">
+                            <Briefcase size={24} />
+                        </div>
+                    </div>
+
+                    {/* Stat 4 */}
+                    <div className="rounded-2xl p-5 border border-secondary/15 bg-surface/80 dark:bg-neutral-900/60 backdrop-blur-xl shadow-lg flex items-center justify-between group hover:border-secondary/40 transition-all">
+                        <div>
+                            <p className="text-xs font-bold text-text-secondary uppercase tracking-wider">Security Protection</p>
+                            <p className="text-lg font-bold text-emerald-500 mt-2 flex items-center gap-1">
+                                <ShieldCheck size={18} /> Active Escrow
+                            </p>
+                        </div>
+                        <div className="h-12 w-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
+                            <ShieldCheck size={24} />
+                        </div>
                     </div>
                 </div>
-
-                {/* Stat 2 */}
-                <div className="rounded-2xl p-5 border border-secondary/15 bg-surface/80 dark:bg-neutral-900/60 backdrop-blur-xl shadow-lg flex items-center justify-between group hover:border-secondary/40 transition-all">
-                    <div>
-                        <p className="text-xs font-bold text-text-secondary uppercase tracking-wider">Completed Sessions</p>
-                        <p className="text-2xl sm:text-3xl font-black text-text mt-1">{clientStats.completedSessions}</p>
-                    </div>
-                    <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
-                        <UserCheck size={24} />
-                    </div>
-                </div>
-
-                {/* Stat 3 */}
-                <div className="rounded-2xl p-5 border border-secondary/15 bg-surface/80 dark:bg-neutral-900/60 backdrop-blur-xl shadow-lg flex items-center justify-between group hover:border-secondary/40 transition-all">
-                    <div>
-                        <p className="text-xs font-bold text-text-secondary uppercase tracking-wider">Total Investment</p>
-                        <p className="text-2xl sm:text-3xl font-black text-text mt-1">{clientStats.totalSpent}</p>
-                    </div>
-                    <div className="h-12 w-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform">
-                        <Briefcase size={24} />
-                    </div>
-                </div>
-
-                {/* Stat 4 */}
-                <div className="rounded-2xl p-5 border border-secondary/15 bg-surface/80 dark:bg-neutral-900/60 backdrop-blur-xl shadow-lg flex items-center justify-between group hover:border-secondary/40 transition-all">
-                    <div>
-                        <p className="text-xs font-bold text-text-secondary uppercase tracking-wider">Security Protection</p>
-                        <p className="text-lg font-bold text-emerald-500 mt-2 flex items-center gap-1">
-                            <ShieldCheck size={18} /> Active Escrow
-                        </p>
-                    </div>
-                    <div className="h-12 w-12 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
-                        <ShieldCheck size={24} />
-                    </div>
-                </div>
-
-            </div>
+            )}
 
             {/* Main Content Sections: Bookings & Activity */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -179,50 +198,55 @@ const ClientDashboardOverviewPage = () => {
                         </Link>
                     </div>
 
-                    <div className="space-y-4">
-                        {upcomingBookings.map((booking) => (
-                            <div
-                                key={booking.id}
-                                className="p-5 sm:p-6 rounded-2xl bg-surface/80 dark:bg-neutral-900/70 border border-secondary/20 backdrop-blur-xl shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:border-secondary/40 transition-all"
-                            >
-                                <div className="flex items-center gap-4">
-                                    <Image
-                                        src={booking.avatar}
-                                        alt={booking.lawyerName}
-                                        width={800}
-                                        height={800}
-                                        className="w-14 h-14 rounded-2xl object-cover border border-secondary/30 shrink-0"
-                                    />
-                                    <div className="space-y-1">
-                                        <div className="flex items-center gap-2">
-                                            <h3 className="font-bold text-text text-base sm:text-lg">{booking.lawyerName}</h3>
-                                            <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
-                                                {booking.status}
-                                            </span>
-                                        </div>
-                                        <p className="text-xs text-secondary font-medium">{booking.specialization}</p>
-                                        <div className="flex flex-wrap items-center gap-3 text-xs text-text-secondary pt-1">
-                                            <span className="flex items-center gap-1">
-                                                <Calendar size={13} className="text-secondary" /> {booking.date}
-                                            </span>
-                                            <span className="flex items-center gap-1">
-                                                <Clock size={13} className="text-secondary" /> {booking.time}
-                                            </span>
+                    {/* Show BookingCardSkeleton when loading */}
+                    {isLoading ? (
+                        <BookingCardSkeleton count={2} />
+                    ) : (
+                        <div className="space-y-4">
+                            {upcomingBookings.map((booking) => (
+                                <div
+                                    key={booking.id}
+                                    className="p-5 sm:p-6 rounded-2xl bg-surface/80 dark:bg-neutral-900/70 border border-secondary/20 backdrop-blur-xl shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:border-secondary/40 transition-all"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <Image
+                                            src={booking.avatar}
+                                            alt={booking.lawyerName}
+                                            width={800}
+                                            height={800}
+                                            className="w-14 h-14 rounded-2xl object-cover border border-secondary/30 shrink-0"
+                                        />
+                                        <div className="space-y-1">
+                                            <div className="flex items-center gap-2">
+                                                <h3 className="font-bold text-text text-base sm:text-lg">{booking.lawyerName}</h3>
+                                                <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                                                    {booking.status}
+                                                </span>
+                                            </div>
+                                            <p className="text-xs text-secondary font-medium">{booking.specialization}</p>
+                                            <div className="flex flex-wrap items-center gap-3 text-xs text-text-secondary pt-1">
+                                                <span className="flex items-center gap-1">
+                                                    <Calendar size={13} className="text-secondary" /> {booking.date}
+                                                </span>
+                                                <span className="flex items-center gap-1">
+                                                    <Clock size={13} className="text-secondary" /> {booking.time}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                <div className="flex items-center gap-2 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-neutral-200 dark:border-neutral-800">
-                                    <Link
-                                        href={`/dashboard/client/my-bookings`}
-                                        className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-secondary/10 hover:bg-secondary/20 text-secondary border border-secondary/30 text-xs font-bold transition-all"
-                                    >
-                                        <MessageSquare size={14} /> Join Session
-                                    </Link>
+                                    <div className="flex items-center gap-2 w-full sm:w-auto pt-3 sm:pt-0 border-t sm:border-t-0 border-neutral-200 dark:border-neutral-800">
+                                        <Link
+                                            href={`/dashboard/client/my-bookings`}
+                                            className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-secondary/10 hover:bg-secondary/20 text-secondary border border-secondary/30 text-xs font-bold transition-all"
+                                        >
+                                            <MessageSquare size={14} /> Join Session
+                                        </Link>
+                                    </div>
                                 </div>
-                            </div>
-                        ))}
-                    </div>
+                            ))}
+                        </div>
+                    )}
 
                     {/* Quick Guidance Box */}
                     <div className="p-6 rounded-2xl bg-gradient-to-r from-secondary/10 via-surface to-surface dark:from-secondary/10 dark:via-neutral-900 dark:to-neutral-900 border border-secondary/20 flex items-start gap-4">
@@ -241,29 +265,33 @@ const ClientDashboardOverviewPage = () => {
                 {/* Right Column (1 Col): Activity Log & Quick Actions */}
                 <div className="space-y-6">
 
-                    {/* Recent Activity Card */}
+                    {/* Recent Activity Card (Shows ActivityListSkeleton when loading) */}
                     <div className="p-6 rounded-2xl bg-surface/80 dark:bg-neutral-900/70 border border-secondary/20 backdrop-blur-xl shadow-xl space-y-6">
                         <h2 className="text-lg font-bold text-text flex items-center gap-2">
                             <Clock className="text-secondary" size={18} /> Recent Activity
                         </h2>
 
-                        <div className="space-y-4">
-                            {recentActivities.map((act) => {
-                                const IconComp = act.icon;
-                                return (
-                                    <div key={act.id} className="flex items-start gap-3.5 pb-3 border-b border-neutral-100 dark:border-neutral-800/60 last:border-0 last:pb-0">
-                                        <div className={`p-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 shrink-0 ${act.iconColor}`}>
-                                            <IconComp size={16} />
+                        {isLoading ? (
+                            <ActivityListSkeleton count={3} />
+                        ) : (
+                            <div className="space-y-4">
+                                {recentActivities.map((act) => {
+                                    const IconComp = act.icon;
+                                    return (
+                                        <div key={act.id} className="flex items-start gap-3.5 pb-3 border-b border-neutral-100 dark:border-neutral-800/60 last:border-0 last:pb-0">
+                                            <div className={`p-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 shrink-0 ${act.iconColor}`}>
+                                                <IconComp size={16} />
+                                            </div>
+                                            <div className="space-y-0.5 text-xs">
+                                                <p className="font-bold text-text">{act.title}</p>
+                                                <p className="text-text-secondary leading-snug">{act.desc}</p>
+                                                <p className="text-[10px] text-neutral-400 font-mono pt-1">{act.time}</p>
+                                            </div>
                                         </div>
-                                        <div className="space-y-0.5 text-xs">
-                                            <p className="font-bold text-text">{act.title}</p>
-                                            <p className="text-text-secondary leading-snug">{act.desc}</p>
-                                            <p className="text-[10px] text-neutral-400 font-mono pt-1">{act.time}</p>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
 
                     {/* Quick Links Card */}

@@ -1,4 +1,5 @@
 export const uploadImage = async (image) => {
+
     const formData = new FormData();
 
     formData.append("image", image);
@@ -13,7 +14,8 @@ export const uploadImage = async (image) => {
     const data = await response.json();
 
     if (!data.success) {
-        throw new Error("Image upload failed");
+
+        throw new Error(data.error?.message || "Image upload failed");
     }
 
     return data.data.url;
