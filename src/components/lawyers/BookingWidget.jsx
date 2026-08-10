@@ -19,6 +19,8 @@ import {
 import toast from "react-hot-toast";
 import { useSession } from "@/lib/auth-client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { baseURL } from "@/lib/api/baseUrl";
 
 export default function BookingWidget({ lawyer, lawyerId }) {
     const [selectedDate, setSelectedDate] = useState("");
@@ -26,28 +28,24 @@ export default function BookingWidget({ lawyer, lawyerId }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const router = useRouter();
     const { data: session } = useSession();
     const user = session?.user;
-    console.log("Booking Widget Data:", user);
 
     const isAvailable = lawyer?.availabilityStatus?.toLowerCase() === "available";
 
     // Standard platform service fee
-
     const serviceFee = 25;
     const totalAmount = (lawyer?.hourlyRate || 0) + serviceFee;
 
     const timeSlots = ["09:00 AM", "11:00 AM", "02:00 PM", "04:00 PM", "06:00 PM"];
 
     // Handler triggered on clicking the consultation button
-
     const handleOpenModal = () => {
-
-        // 1. Availability Check: Don't proceed if lawyer is busy/unavailable
-
+        // 1. Availability Check
         if (!isAvailable) {
             toast.error(
-                "This lawyer is currently unavailable. Please wait until your booking can be confirmed.",
+                "This lawyer is currently unavailable. Please wait until booking is open.",
                 {
                     duration: 4000,
                     icon: "🚫",
@@ -57,71 +55,71 @@ export default function BookingWidget({ lawyer, lawyerId }) {
         }
 
         // 2. Date Selection Check
-
         if (!selectedDate) {
             toast.error("Please select a consultation date first.");
             return;
         }
 
-        // Proceed to show confirmation modal
+        // 3. Auth Check
+        if (!user?.email) {
+            toast.error("Please log in to hire a lawyer.");
+            return;
+        }
 
         setIsModalOpen(true);
     };
 
+    // Submits request to backend and redirects to client history page
     const handleConfirmBooking = async () => {
         setIsSubmitting(true);
         try {
-            const paymentData = {
-                type: "booking",
-                totalAmount,
-                lawyerId,
+            const payload = {
+                lawyerId: lawyerId || lawyer?._id,
                 lawyerName: lawyer?.lawyerName,
-                selectedDate,
-                selectedTimeSlot,
+                specialization: lawyer?.specialization || lawyer?.specialization,
+                fee: totalAmount,
+                scheduledDate: selectedDate,
+                scheduledSlot: selectedTimeSlot,
+                clientEmail: user?.email,
+                clientName: user?.name || user?.displayName || "Client",
             };
 
-            const res = await fetch("/api/checkout_sessions", {
+            const res = await fetch(`${baseURL}/api/hire-lawyer`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify(paymentData),
+                body: JSON.stringify(payload),
             });
 
             const data = await res.json();
 
-            if (res.ok && data.url) {
-                toast.success("Redirecting to checkout...");
-
-                // Redirect user directly to Stripe Checkout Hosted Page
-                
-                window.location.href = data.url;
+            if (res.ok && data.success) {
+                toast.success("Hiring request sent! Waiting for lawyer approval.");
+                setIsModalOpen(false);
+                router.push(`/dashboard/${user?.role}/my-bookings`);
             } else {
-                toast.error(data.error || "Failed to initiate checkout");
+                toast.error(data.message || "Failed to submit hiring request.");
                 setIsSubmitting(false);
             }
         } catch (error) {
-            console.error("Stripe error:", error);
-            toast.error("Error connecting to payment server");
+            console.error("Booking submission error:", error);
+            toast.error("Error connecting to server.");
             setIsSubmitting(false);
         }
     };
 
     // Render restricted card if user role is not "client"
-
     if (user?.role !== "client") {
         const displayRole = user?.role ? user.role.toUpperCase() : "GUEST";
 
         return (
             <div className="sticky top-24 rounded-3xl border border-rose-500/20 bg-surface/80 dark:bg-neutral-900/80 p-6 md:p-8 backdrop-blur-2xl shadow-2xl relative overflow-hidden space-y-6">
-
                 {/* Ambient Decorative Glow Behind Card */}
-
                 <div className="absolute -top-16 -right-16 w-32 h-32 bg-rose-500/10 rounded-full blur-3xl pointer-events-none" />
                 <div className="absolute -bottom-16 -left-16 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
                 {/* Restricted Access Badge Header */}
-
                 <div className="flex items-center justify-between pb-4 border-b border-border/80">
                     <div className="flex items-center gap-2">
                         <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500">
@@ -138,7 +136,6 @@ export default function BookingWidget({ lawyer, lawyerId }) {
                 </div>
 
                 {/* Hero Restricted Messaging Graphic */}
-
                 <div className="flex flex-col items-center text-center space-y-3 py-2">
                     <div className="relative">
                         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-500/20 to-amber-500/10 border border-rose-500/30 flex items-center justify-center text-rose-500 shadow-xl shadow-rose-500/5">
@@ -164,7 +161,6 @@ export default function BookingWidget({ lawyer, lawyerId }) {
                 </div>
 
                 {/* Details Callout Box */}
-
                 <div className="p-4 rounded-2xl bg-background/80 border border-border/80 space-y-2.5 text-xs">
                     <div className="flex items-center justify-between text-text-secondary">
                         <span>Current User Role</span>
@@ -179,14 +175,10 @@ export default function BookingWidget({ lawyer, lawyerId }) {
                 </div>
 
                 {/* Informational Action Footer */}
-
                 <div className="pt-2">
                     <div className="w-full py-3.5 px-4 rounded-2xl bg-surface/60 border border-border/80 text-text-secondary font-bold text-xs flex items-center justify-between gap-2">
                         <span className="text-[11px]">Need to book an attorney?</span>
-                        <Link
-                            href={"/signup"}
-                            className="block"
-                        >
+                        <Link href={"/signup"} className="block">
                             <span className="text-secondary flex items-center gap-1 text-[11px] font-extrabold uppercase tracking-wider">
                                 Switch to Client <ArrowRight size={14} />
                             </span>
@@ -207,7 +199,6 @@ export default function BookingWidget({ lawyer, lawyerId }) {
             <div className="sticky top-24 rounded-3xl border border-secondary/30 bg-surface/80 dark:bg-neutral-900/80 p-6 md:p-8 backdrop-blur-2xl shadow-2xl space-y-6">
 
                 {/* Header Badge & Price */}
-
                 <div className="flex items-center justify-between pb-4 border-b border-border/80">
                     <div>
                         <span className="text-xs font-bold uppercase tracking-wider text-text-secondary block">
@@ -236,7 +227,6 @@ export default function BookingWidget({ lawyer, lawyerId }) {
                 </div>
 
                 {/* Date Picker Input */}
-
                 <div className="space-y-2">
                     <label className="text-xs font-bold uppercase tracking-wider text-text flex items-center gap-2">
                         <Calendar size={15} className="text-secondary" /> Select Date
@@ -251,7 +241,6 @@ export default function BookingWidget({ lawyer, lawyerId }) {
                 </div>
 
                 {/* Time Slots */}
-
                 <div className="space-y-2">
                     <label className="text-xs font-bold uppercase tracking-wider text-text flex items-center gap-2">
                         <Clock size={15} className="text-secondary" /> Preferred Slot
@@ -274,7 +263,6 @@ export default function BookingWidget({ lawyer, lawyerId }) {
                 </div>
 
                 {/* Price Summary Breakdown */}
-
                 <div className="space-y-2.5 pt-4 border-t border-border/80 text-xs text-text-secondary">
                     <div className="flex justify-between">
                         <span>Hourly Legal Rate</span>
@@ -291,7 +279,6 @@ export default function BookingWidget({ lawyer, lawyerId }) {
                 </div>
 
                 {/* Status Notice Banner if Busy */}
-
                 {!isAvailable && (
                     <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center gap-2.5">
                         <AlertTriangle size={18} className="shrink-0" />
@@ -300,7 +287,6 @@ export default function BookingWidget({ lawyer, lawyerId }) {
                 )}
 
                 {/* Booking Action Button */}
-
                 <button
                     onClick={handleOpenModal}
                     className={`w-full py-4 rounded-2xl font-black text-sm uppercase tracking-wider shadow-xl transition-all duration-300 transform active:translate-y-0 cursor-pointer flex items-center justify-center gap-2 ${isAvailable
@@ -319,7 +305,6 @@ export default function BookingWidget({ lawyer, lawyerId }) {
             </div>
 
             {/* Hire Confirmation Modal */}
-
             <AnimatePresence>
                 {isModalOpen && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
@@ -355,7 +340,7 @@ export default function BookingWidget({ lawyer, lawyerId }) {
                                 </div>
                                 <div className="flex justify-between items-center border-b border-border/60 pb-2">
                                     <span className="text-text-secondary text-xs">Specialization</span>
-                                    <span className="font-semibold text-secondary">{lawyer?.specialization}</span>
+                                    <span className="font-semibold text-secondary">{lawyer?.specialization || lawyer?.specialisation}</span>
                                 </div>
                                 <div className="flex justify-between items-center border-b border-border/60 pb-2">
                                     <span className="text-text-secondary text-xs">Scheduled Date</span>
@@ -364,7 +349,7 @@ export default function BookingWidget({ lawyer, lawyerId }) {
                                     </span>
                                 </div>
                                 <div className="flex justify-between items-center pt-1 font-bold">
-                                    <span className="text-xs text-text-secondary">Total Due</span>
+                                    <span className="text-xs text-text-secondary">Total Fee</span>
                                     <span className="text-lg text-secondary">${totalAmount}.00</span>
                                 </div>
                             </div>
@@ -382,7 +367,7 @@ export default function BookingWidget({ lawyer, lawyerId }) {
                                     className="w-1/2 py-3 rounded-xl bg-secondary text-surface-dark font-extrabold text-xs uppercase tracking-wider shadow-lg hover:bg-secondary-light transition disabled:opacity-50 flex items-center justify-center gap-2"
                                 >
                                     {isSubmitting ? (
-                                        <span className="animate-pulse">Confirming...</span>
+                                        <span className="animate-pulse">Submitting Request...</span>
                                     ) : (
                                         <>
                                             <CheckCircle2 size={16} /> Confirm Hire

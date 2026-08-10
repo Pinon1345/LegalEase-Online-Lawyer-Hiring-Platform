@@ -13,7 +13,7 @@ export default function HiringHistory() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // If session/email isn't available yet, don't trigger state updates synchronously.
+        // 1. If email isn't available yet, wait without triggering synchronous state updates
         if (!user?.email) return;
 
         let isMounted = true;
@@ -38,11 +38,12 @@ export default function HiringHistory() {
 
         fetchLawyerRequests();
 
+        // Cleanup guard to prevent memory leaks on unmount
         return () => {
             isMounted = false;
         };
     }, [user?.email]);
-    
+
     // Handle status update (Accept / Reject)
     const handleStatusUpdate = async (id, newStatus) => {
         try {
@@ -55,7 +56,7 @@ export default function HiringHistory() {
             const data = await res.json();
             if (res.ok && data.success) {
                 toast.success(`Request marked as ${newStatus}`);
-                // Refresh local state
+                // Optimistically update local state
                 setBookings((prev) =>
                     prev.map((item) => (item._id === id ? { ...item, status: newStatus } : item))
                 );
@@ -68,27 +69,33 @@ export default function HiringHistory() {
         }
     };
 
-    if (loading) {
-        return <div className="p-8 text-center text-text-secondary">Loading consultation requests...</div>;
+    if (loading && user?.email) {
+        return (
+            <div className="p-8 text-center text-text-secondary font-medium animate-pulse">
+                Loading consultation requests...
+            </div>
+        );
     }
 
     return (
         <div className="p-6 md:p-10 space-y-6">
             <div>
-                <h2 className="text-2xl font-black text-text">Hiring & Consultation History</h2>
-                <p className="text-sm text-text-secondary">Manage and respond to client booking requests.</p>
+                <h2 className="text-2xl font-black text-text">Hiring & Consultation Requests</h2>
+                <p className="text-xs md:text-sm text-text-secondary mt-1">
+                    Manage and respond to client consultation bookings.
+                </p>
             </div>
 
             {bookings.length === 0 ? (
-                <div className="p-8 rounded-2xl bg-surface border border-border text-center text-text-secondary">
-                    No consultation requests found.
+                <div className="p-8 rounded-2xl bg-surface border border-border text-center text-text-secondary text-sm">
+                    No hiring requests found.
                 </div>
             ) : (
                 <div className="grid gap-4">
                     {bookings.map((item) => (
                         <div
                             key={item._id}
-                            className="p-5 rounded-2xl border border-border/80 bg-surface/60 flex flex-col md:flex-row md:items-center justify-between gap-4"
+                            className="p-5 rounded-2xl border border-border/80 bg-surface/60 flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-sm"
                         >
                             <div className="space-y-2">
                                 <div className="flex items-center gap-2">
@@ -113,14 +120,14 @@ export default function HiringHistory() {
                                 </div>
                             </div>
 
-                            {/* Status and Actions */}
+                            {/* Status & Actions */}
                             <div className="flex items-center gap-3">
                                 <span
                                     className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${item.status === "accepted"
-                                        ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/30"
-                                        : item.status === "rejected"
-                                            ? "bg-rose-500/10 text-rose-500 border border-rose-500/30"
-                                            : "bg-amber-500/10 text-amber-500 border border-amber-500/30"
+                                            ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/30"
+                                            : item.status === "rejected"
+                                                ? "bg-rose-500/10 text-rose-500 border border-rose-500/30"
+                                                : "bg-amber-500/10 text-amber-500 border border-amber-500/30"
                                         }`}
                                 >
                                     {item.status || "pending"}
@@ -130,13 +137,13 @@ export default function HiringHistory() {
                                     <div className="flex items-center gap-2">
                                         <button
                                             onClick={() => handleStatusUpdate(item._id, "accepted")}
-                                            className="px-3 py-1.5 rounded-xl bg-emerald-500 text-white font-bold text-xs flex items-center gap-1 hover:bg-emerald-600 transition"
+                                            className="px-3 py-1.5 rounded-xl bg-emerald-500 text-white font-bold text-xs flex items-center gap-1 hover:bg-emerald-600 transition cursor-pointer"
                                         >
                                             <CheckCircle size={14} /> Accept
                                         </button>
                                         <button
                                             onClick={() => handleStatusUpdate(item._id, "rejected")}
-                                            className="px-3 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-500 font-bold text-xs flex items-center gap-1 hover:bg-rose-500/20 transition"
+                                            className="px-3 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-500 font-bold text-xs flex items-center gap-1 hover:bg-rose-500/20 transition cursor-pointer"
                                         >
                                             <XCircle size={14} /> Reject
                                         </button>

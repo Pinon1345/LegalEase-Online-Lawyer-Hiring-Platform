@@ -24,6 +24,7 @@ import {
     Moon,
 } from "lucide-react";
 import { MdOutlineManageHistory } from "react-icons/md";
+import { RiGitPullRequestLine } from "react-icons/ri";
 
 // Navigation Items for LegalEase Dashboard
 
@@ -37,6 +38,11 @@ const lawyerNavItems = [
         name: "Profile Management",
         href: "/dashboard/lawyer/manage-legal-profile",
         icon: Users,
+    },
+    {
+        name: "Hiring Requests",
+        href: "/dashboard/lawyer/hiring-requests",
+        icon: RiGitPullRequestLine,
     },
     {
         name: "Hiring History",
