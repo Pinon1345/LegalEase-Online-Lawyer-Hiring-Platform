@@ -3,83 +3,86 @@
 import React, { useEffect, useState } from "react";
 import { useSession } from "@/lib/auth-client";
 import {
-    CheckCircle,
-    XCircle,
     Clock,
     Calendar,
     User,
     Mail,
     DollarSign,
     Briefcase,
-    Sparkles
+    Sparkles,
+    Scale
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { baseURL } from "@/lib/api/baseUrl";
-import Image from "next/image";
 import { BookingCardSkeleton, Skeleton } from "@/components/ui/Skeleton";
+import Image from "next/image";
 
 export default function HiringHistory() {
-    const { data: session } = useSession();
+    const { data: session, isPending: sessionLoading } = useSession();
     const user = session?.user;
 
     const [bookings, setBookings] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [usersList, setUsersList] = useState([]);
+    const [isFetching, setIsFetching] = useState(false);
+
+    // Derived loading state to prevent cascading render warnings
+    const loading = sessionLoading || isFetching;
 
     useEffect(() => {
-        // If session/email isn't available yet, don't trigger state updates synchronously.
-        if (!user?.email) return;
+        if (sessionLoading || !user?.email) return;
 
         let isMounted = true;
 
-        const fetchLawyerRequests = async () => {
+        const fetchData = async () => {
             try {
-                const res = await fetch(`${baseURL}/api/hire-lawyer?lawyerEmail=${user.email}`);
-                const data = await res.json();
+                setIsFetching(true);
 
-                if (isMounted && data.success) {
-                    setBookings(data.data || []);
+                // Fetch hiring history and user list concurrently
+                const [bookingsRes, usersRes] = await Promise.all([
+                    fetch(`${baseURL}/api/hire-lawyer?lawyerEmail=${encodeURIComponent(user.email)}`),
+                    fetch(`${baseURL}/api/users`).catch(() => null)
+                ]);
+
+                const bookingsData = await bookingsRes.json();
+                let parsedUsers = [];
+
+                if (usersRes && usersRes.ok) {
+                    const rawUsers = await usersRes.json();
+                    parsedUsers = Array.isArray(rawUsers)
+                        ? rawUsers
+                        : rawUsers?.data || rawUsers?.users || [];
+                }
+
+                if (isMounted) {
+                    // Extract bookings list
+                    if (Array.isArray(bookingsData)) {
+                        setBookings(bookingsData);
+                    } else if (bookingsData?.success && Array.isArray(bookingsData?.data)) {
+                        setBookings(bookingsData.data);
+                    } else if (bookingsData?.data && Array.isArray(bookingsData.data)) {
+                        setBookings(bookingsData.data);
+                    } else {
+                        setBookings([]);
+                    }
+
+                    setUsersList(parsedUsers);
                 }
             } catch (error) {
-                console.error("Error fetching hiring history:", error);
+                console.error("Error fetching hiring history data:", error);
                 toast.error("Failed to load hiring requests.");
             } finally {
                 if (isMounted) {
-                    setLoading(false);
+                    setIsFetching(false);
                 }
             }
         };
 
-        fetchLawyerRequests();
+        fetchData();
 
         return () => {
             isMounted = false;
         };
-    }, [user?.email]);
-
-    // Handle status update (Accept / Reject)
-    const handleStatusUpdate = async (id, newStatus) => {
-        try {
-            const res = await fetch(`${baseURL}/api/hire-lawyer/${id}`, {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ status: newStatus }),
-            });
-
-            const data = await res.json();
-            if (res.ok && data.success) {
-                toast.success(`Request marked as ${newStatus}`);
-                // Refresh local state
-                setBookings((prev) =>
-                    prev.map((item) => (item._id === id ? { ...item, status: newStatus } : item))
-                );
-            } else {
-                toast.error(data.message || "Failed to update status");
-            }
-        } catch (error) {
-            console.error("Status update error:", error);
-            toast.error("Server error updating request.");
-        }
-    };
+    }, [user?.email, sessionLoading]);
 
     return (
         <div className="p-6 md:p-10 space-y-8 max-w-7xl mx-auto">
@@ -93,7 +96,7 @@ export default function HiringHistory() {
                         <Sparkles size={20} className="text-amber-400 animate-pulse" />
                     </div>
                     <p className="text-xs md:text-sm text-text-secondary mt-1">
-                        Manage, review, and respond to client booking requests.
+                        View complete archive of all past and current hiring consultation records.
                     </p>
                 </div>
                 <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-surface border border-border/60 text-xs font-semibold text-text-secondary self-start md:self-auto">
@@ -117,27 +120,71 @@ export default function HiringHistory() {
                     <div className="w-12 h-12 rounded-full bg-border/40 mx-auto flex items-center justify-center text-text-secondary">
                         <User size={24} />
                     </div>
-                    <p className="text-base font-semibold text-text">No consultation requests found.</p>
+                    <p className="text-base font-semibold text-text">No consultation records found.</p>
                     <p className="text-xs text-text-secondary">
-                        New client bookings will automatically appear here once scheduled.
+                        Once client bookings are processed, full history logs will display here.
                     </p>
                 </div>
             ) : (
                 <div className="grid gap-5">
                     {bookings.map((item) => {
-                        // Support various potential image keys from backend
-                        const clientImage = item.clientImage || item.image || item.clientPhoto || "";
-                        const clientName = item.clientName || "Client";
+                        // Extract request identifiers from booking item
+                        const senderId =
+                            item.clientId ||
+                            item.userId ||
+                            item.user_id ||
+                            item.client?._id ||
+                            item.user?._id;
+
+                        const senderEmail =
+                            item.clientEmail ||
+                            item.email ||
+                            item.userEmail ||
+                            item.client_email ||
+                            item.client?.email;
+
+                        // FIND USER LOGIC: Find sender in users collection by ID or Email
+                        const senderUser = usersList.find((u) => {
+                            const uId = u._id?.toString() || u.id?.toString();
+                            const matchesId = senderId && uId === senderId?.toString();
+                            const matchesEmail =
+                                senderEmail &&
+                                u.email?.toLowerCase() === senderEmail?.toLowerCase();
+
+                            return matchesId || matchesEmail;
+                        });
+
+                        // Retrieve profile image from found user (`user.image`)
+                        const clientImage =
+                            senderUser?.image ||
+                            senderUser?.imageUrl ||
+                            item.clientImage ||
+                            item.image ||
+                            "";
+
+                        const clientName =
+                            senderUser?.name ||
+                            item.clientName ||
+                            item.name ||
+                            "Client";
+
+                        const clientEmailDisplay =
+                            senderUser?.email || senderEmail || "";
+
                         const clientInitial = clientName.charAt(0).toUpperCase();
+
+                        // Lawyer Name
+                        const lawyerName =
+                            item.lawyerName || item.lawyer?.name || user?.name || "Lawyer";
 
                         return (
                             <div
-                                key={item._id}
+                                key={item._id || item.id}
                                 className="group relative p-6 rounded-2xl border border-border/80 bg-surface/80 hover:bg-surface backdrop-blur-md shadow-sm hover:shadow-xl hover:border-emerald-500/30 transition-all duration-300 flex flex-col lg:flex-row lg:items-center justify-between gap-6"
                             >
                                 {/* Left Side: Profile Photo & Information */}
                                 <div className="flex items-start md:items-center gap-4">
-                                    {/* Client Avatar / Initial Badge */}
+                                    {/* Client Avatar Render */}
                                     <div className="relative flex-shrink-0">
                                         {clientImage ? (
                                             <Image
@@ -145,7 +192,6 @@ export default function HiringHistory() {
                                                 alt={clientName}
                                                 width={800}
                                                 height={800}
-                                                unoptimized
                                                 className="w-14 h-14 md:w-16 md:h-16 rounded-2xl object-cover border-2 border-emerald-500/30 shadow-md group-hover:scale-105 transition-transform duration-300"
                                             />
                                         ) : (
@@ -156,33 +202,42 @@ export default function HiringHistory() {
                                         <span className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-surface rounded-full"></span>
                                     </div>
 
-                                    {/* Text Info */}
+                                    {/* Detailed Information */}
                                     <div className="space-y-2">
                                         <div className="flex flex-wrap items-center gap-2">
                                             <h3 className="text-lg md:text-xl font-bold text-text tracking-tight group-hover:text-emerald-400 transition-colors">
                                                 {clientName}
                                             </h3>
-                                            {item.clientEmail && (
+                                            {clientEmailDisplay && (
                                                 <span className="inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full bg-border/40 text-text-secondary border border-border/50">
                                                     <Mail size={12} className="text-secondary" />
-                                                    {item.clientEmail}
+                                                    {clientEmailDisplay}
                                                 </span>
                                             )}
                                         </div>
 
-                                        {/* Scheduled Info Pills */}
+                                        {/* Lawyer Badge & Meta Pills */}
                                         <div className="flex flex-wrap items-center gap-2 text-xs text-text-secondary pt-1">
-                                            {item.scheduledDate && (
+                                            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold">
+                                                <Scale size={14} />
+                                                <span>Advocate: <span className="font-bold text-purple-600">{lawyerName}</span></span>
+                                            </div>
+
+                                            {(item.scheduledDate || item.date) && (
                                                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-background/60 border border-border/60">
                                                     <Calendar size={14} className="text-amber-400" />
-                                                    <span className="font-medium text-text">{item.scheduledDate}</span>
+                                                    <span className="font-medium text-text">
+                                                        {item.scheduledDate || item.date}
+                                                    </span>
                                                 </div>
                                             )}
 
-                                            {item.scheduledSlot && (
+                                            {(item.scheduledSlot || item.slot || item.time) && (
                                                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-background/60 border border-border/60">
                                                     <Clock size={14} className="text-cyan-400" />
-                                                    <span className="font-medium text-text">{item.scheduledSlot}</span>
+                                                    <span className="font-medium text-text">
+                                                        {item.scheduledSlot || item.slot || item.time}
+                                                    </span>
                                                 </div>
                                             )}
 
@@ -196,47 +251,26 @@ export default function HiringHistory() {
                                     </div>
                                 </div>
 
-                                {/* Right Side: Status Badge & Action Controls */}
-                                <div className="flex flex-wrap items-center justify-between lg:justify-end gap-4 pt-4 lg:pt-0 border-t lg:border-t-0 border-border/40">
-                                    {/* Status Badge */}
-                                    <div className="flex items-center gap-2">
+                                {/* Right Side: Status Badge */}
+                                <div className="flex items-center justify-between lg:justify-end gap-4 pt-4 lg:pt-0 border-t lg:border-t-0 border-border/40">
+                                    <span
+                                        className={`px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 ${item.status === "accepted"
+                                            ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-sm shadow-emerald-500/10"
+                                            : item.status === "rejected"
+                                                ? "bg-rose-500/10 text-rose-400 border border-rose-500/30 shadow-sm shadow-rose-500/10"
+                                                : "bg-amber-500/10 text-amber-400 border border-amber-500/30"
+                                            }`}
+                                    >
                                         <span
-                                            className={`px-3.5 py-1.5 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 ${item.status === "accepted"
-                                                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-sm shadow-emerald-500/10"
+                                            className={`w-2 h-2 rounded-full ${item.status === "accepted"
+                                                ? "bg-emerald-400"
                                                 : item.status === "rejected"
-                                                    ? "bg-rose-500/10 text-rose-400 border border-rose-500/30 shadow-sm shadow-rose-500/10"
-                                                    : "bg-amber-500/10 text-amber-400 border border-amber-500/30 animate-pulse"
+                                                    ? "bg-rose-400"
+                                                    : "bg-amber-400"
                                                 }`}
-                                        >
-                                            <span
-                                                className={`w-2 h-2 rounded-full ${item.status === "accepted"
-                                                    ? "bg-emerald-400"
-                                                    : item.status === "rejected"
-                                                        ? "bg-rose-400"
-                                                        : "bg-amber-400"
-                                                    }`}
-                                            ></span>
-                                            {item.status || "pending"}
-                                        </span>
-                                    </div>
-
-                                    {/* Action Buttons */}
-                                    {item.status === "pending" && (
-                                        <div className="flex items-center gap-2">
-                                            <button
-                                                onClick={() => handleStatusUpdate(item._id, "accepted")}
-                                                className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-emerald-500/20 active:scale-95 transition-all cursor-pointer"
-                                            >
-                                                <CheckCircle size={15} /> Accept
-                                            </button>
-                                            <button
-                                                onClick={() => handleStatusUpdate(item._id, "rejected")}
-                                                className="px-4 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-400 font-bold text-xs flex items-center gap-1.5 active:scale-95 transition-all cursor-pointer"
-                                            >
-                                                <XCircle size={15} /> Reject
-                                            </button>
-                                        </div>
-                                    )}
+                                        ></span>
+                                        {item.status || "pending"}
+                                    </span>
                                 </div>
                             </div>
                         );
