@@ -24,7 +24,7 @@ export const BookingTableRow = ({ booking = {}, onInitiatePayment }) => {
     const feeNumber = typeof rawFee === 'number' ? rawFee : (parseFloat(rawFee) || 0);
 
     // Format ISO Date safely with fallbacks
-    const rawDate = booking.bookingDate || booking.hiringDate || booking.createdAt;
+    const rawDate = booking.bookingDate || booking.hiringDate || booking.createdAt || booking.scheduledDate;
     const formattedDate = rawDate && !isNaN(new Date(rawDate).getTime())
         ? new Date(rawDate).toLocaleDateString('en-US', {
             year: 'numeric',
@@ -129,6 +129,7 @@ export const BookingTableRow = ({ booking = {}, onInitiatePayment }) => {
                     {/* Pay Button */}
                     {status === 'accepted' && paymentStatus === 'unpaid' && (
                         <button
+                            type="button"
                             onClick={() => onInitiatePayment(booking)}
                             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-black text-xs shadow-md transition-all transform active:scale-95 cursor-pointer"
                         >
@@ -140,13 +141,14 @@ export const BookingTableRow = ({ booking = {}, onInitiatePayment }) => {
                     {paymentStatus === 'paid' && (
                         <>
                             <button
+                                type="button"
                                 disabled
                                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-100 dark:bg-neutral-800 text-neutral-400 text-xs font-bold cursor-not-allowed border border-neutral-200 dark:border-neutral-700"
                             >
                                 <Check size={14} className="text-emerald-500" /> Paid
                             </button>
                             <Link
-                                href={`/dashboard/user/comments`}
+                                href={`/dashboard/client/comments`}
                                 className="p-2 rounded-xl bg-secondary/10 hover:bg-secondary/20 text-secondary transition-colors"
                                 title="Leave a comment"
                             >

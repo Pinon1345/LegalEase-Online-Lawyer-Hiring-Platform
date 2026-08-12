@@ -48,6 +48,7 @@ export async function POST(req) {
             metaObj = {
                 email: String(user?.email || ""),
                 userId: String(user?.id || ""),
+                bookingId: String(body?.bookingId || ""),
                 lawyerId: String(body?.lawyerId || ""),
                 paymentType: String(type),
                 amount: String(body?.totalAmount || ""),

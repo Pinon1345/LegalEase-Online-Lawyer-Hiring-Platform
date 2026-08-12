@@ -32,7 +32,8 @@ export default async function BookingPaymentSuccess({ searchParams }) {
     const { status, customer_details, amount_total, currency, metadata, payment_status } = session;
 
     // Extract values matching backend expectation
-    const clientEmail = metadata?.email || customer_details?.email || 'your email';
+    const bookingId = metadata?.bookingId || null;
+    const clientEmail = metadata?.clientEmail || metadata?.email || customer_details?.email || 'your email';
     const lawyerName = metadata?.lawyerName || 'Your Attorney';
     const lawyerId = metadata?.lawyerId || '';
     const paymentType = metadata?.paymentType || 'booking';
@@ -49,6 +50,7 @@ export default async function BookingPaymentSuccess({ searchParams }) {
             },
             cache: 'no-store',
             body: JSON.stringify({
+                bookingId: bookingId,
                 amount: amount,
                 lawyerId: lawyerId,
                 lawyerName: lawyerName,

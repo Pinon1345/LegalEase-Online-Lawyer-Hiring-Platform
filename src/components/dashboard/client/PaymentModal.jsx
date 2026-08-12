@@ -10,6 +10,7 @@ export const PaymentModal = ({ booking, isOpen, onClose }) => {
     if (!isOpen || !booking) return null;
 
     const formattedFee = (booking.fee || booking.amount || 0).toFixed(2);
+    const bookingId = booking._id || booking.id || "";
 
     const handleCloseModal = () => {
         setIsProcessing(false);
@@ -26,12 +27,15 @@ export const PaymentModal = ({ booking, isOpen, onClose }) => {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
+                    bookingId: bookingId, // Crucial for updating MongoDB document after payment
                     type: "booking",
                     totalAmount: booking.fee || booking.amount || 0,
                     lawyerId: booking.lawyerId || booking.lawyer_id || "",
                     lawyerName: booking.lawyerName || "Legal Consultation",
-                    selectedDate: booking.scheduledDate || booking.date || "",
-                    selectedTimeSlot: booking.scheduledSlot || booking.time || "",
+                    clientEmail: booking.clientEmail || booking.userEmail || "",
+                    selectedDate: booking.scheduledDate || booking.date || booking.bookingDate || "",
+                    selectedTimeSlot: booking.scheduledSlot || booking.time || booking.hiringSlot || "",
+                    specialization: booking.specialization || "General Legal",
                     paymentStatus: "paid"
                 }),
             });
@@ -72,6 +76,7 @@ export const PaymentModal = ({ booking, isOpen, onClose }) => {
                         </div>
                     </div>
                     <button
+                        type="button"
                         onClick={handleCloseModal}
                         disabled={isProcessing}
                         className="p-1.5 text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 rounded-lg transition disabled:opacity-50 cursor-pointer"
@@ -83,12 +88,22 @@ export const PaymentModal = ({ booking, isOpen, onClose }) => {
                 <form onSubmit={handleSubmitPayment} className="space-y-4">
                     <div className="p-4 rounded-2xl bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-800 space-y-2 text-xs">
                         <div className="flex justify-between">
+                            <span className="text-neutral-500">Booking ID:</span>
+                            <span className="font-mono font-bold text-neutral-800 dark:text-neutral-200 truncate max-w-[180px]">
+                                {bookingId || "N/A"}
+                            </span>
+                        </div>
+                        <div className="flex justify-between">
                             <span className="text-neutral-500">Lawyer:</span>
-                            <span className="font-bold text-neutral-800 dark:text-neutral-200">{booking.lawyerName || "N/A"}</span>
+                            <span className="font-bold text-neutral-800 dark:text-neutral-200">
+                                {booking.lawyerName || "N/A"}
+                            </span>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-neutral-500">Specialisation:</span>
-                            <span className="font-medium text-secondary">{booking.specialization || "General Legal"}</span>
+                            <span className="font-medium text-secondary">
+                                {booking.specialization || "General Legal"}
+                            </span>
                         </div>
                         <div className="h-px bg-neutral-200 dark:bg-neutral-700/60 my-1" />
                         <div className="flex justify-between items-center text-sm font-black text-neutral-900 dark:text-white pt-1">
