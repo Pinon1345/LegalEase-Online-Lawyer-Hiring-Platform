@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -19,78 +19,133 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import { ActivityListSkeleton, BookingCardSkeleton, StatCardSkeleton } from '@/components/ui/Skeleton';
-
+import { baseURL } from '@/lib/api/baseUrl';
+import { useSession } from '@/lib/auth-client';
 
 const ClientDashboardOverviewPage = () => {
 
+    // Fetch user session directly inside component
+    const { data: session, status } = useSession();
+    const user = session?.user;
+
     const [isLoading, setIsLoading] = useState(true);
 
-    // Simulate async data loading
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setIsLoading(false);
-        }, 1200);
-
-        return () => clearTimeout(timer);
-    }, []);
-
-    // Mock user & statistics data
-
-    const clientStats = {
+    // Initial state restored to previous values, with totalSpent starting at 0 to be calculated
+    const [stats, setStats] = useState({
         activeConsultations: 2,
         completedSessions: 8,
-        pendingReviews: 1,
-        totalSpent: '$1,250.00'
-    };
+        totalSpent: 0,
+    });
 
-    const upcomingBookings = [
+    // Restored static upcoming bookings
+    const [upcomingBookings, setUpcomingBookings] = useState([
         {
             id: 'b1',
-            lawyerName: 'Tariq Al-Mansoor',
-            specialization: 'Labor & Employment',
-            date: 'Sept 02, 2026',
-            time: '06:00 PM',
+            lawyerName: 'Sarah Jenkins, Esq.',
+            specialization: 'Corporate & Tax Law',
+            date: 'Tomorrow, Oct 24',
+            time: '10:00 AM EST',
             status: 'Confirmed',
-            avatar: 'https://media.istockphoto.com/id/584003738/photo/portrait-of-confident-lawyer-against-bookshelf.webp?a=1&b=1&s=612x612&w=0&k=20&c=0VNqvhaf45pJXYDGvUKUIP9ymmNm1JtvR7NZCgURXLk='
+            lawyerAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=200'
         },
         {
             id: 'b2',
-            lawyerName: 'Elena Rostova',
-            specialization: 'Corporate & Contract Law',
-            date: 'Sept 08, 2026',
-            time: '02:30 PM',
-            status: 'Confirmed',
-            avatar: 'https://plus.unsplash.com/premium_photo-1743020414629-442467fad611?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NDB8fGZlbWFsZSUyMGxhd3llcnN8ZW58MHx8MHx8fDA%3D'
+            lawyerName: 'David Miller, Esq.',
+            specialization: 'Intellectual Property',
+            date: 'Friday, Oct 27',
+            time: '02:30 PM EST',
+            status: 'Scheduled',
+            lawyerAvatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&q=80&w=200'
         }
-    ];
+    ]);
 
-    const recentActivities = [
+    // Restored static recent activities
+    const [recentActivities, setRecentActivities] = useState([
         {
-            id: 1,
-            title: 'Payment Secured',
-            desc: 'Consultation fee with Tariq Al-Mansoor ($405.00)',
+            id: 'act-1',
+            title: 'Consultation Confirmed',
+            desc: 'Booking with Sarah Jenkins, Esq. confirmed.',
             time: '2 hours ago',
             icon: CheckCircle2,
             iconColor: 'text-emerald-500'
         },
         {
-            id: 2,
-            title: 'Document Shared',
-            desc: 'Uploaded Employment_Contract_Draft.pdf',
+            id: 'act-2',
+            title: 'Document Uploaded',
+            desc: 'Added Non-Disclosure Agreement draft.',
             time: 'Yesterday',
             icon: FileText,
             iconColor: 'text-secondary'
         },
         {
-            id: 3,
-            title: 'Consultation Completed',
-            desc: 'Session with Attorney Sarah Jenkins',
-            time: '3 days ago',
-            icon: UserCheck,
+            id: 'act-3',
+            title: 'Payment Processed',
+            desc: 'Escrow deposit verified via Stripe.',
+            time: '2 days ago',
+            icon: ShieldCheck,
             iconColor: 'text-blue-500'
         }
-    ];
+    ]);
+
+    // Extract Client Identifiers from session user
+    const clientId = user?._id || user?.id;
+    const clientEmail = user?.email;
+
+    useEffect(() => {
+        let isMounted = true;
+
+        async function fetchDashboardData() {
+            // Wait until session state finishes loading
+            if (status === 'loading') return;
+
+            if (!clientId && !clientEmail) {
+                setIsLoading(false);
+                return;
+            }
+
+            setIsLoading(true);
+
+            try {
+                // Query backend using email parameter
+                const queryParam = clientEmail
+                    ? `email=${encodeURIComponent(clientEmail)}`
+                    : `email=${encodeURIComponent(user?.email)}`;
+
+                const res = await fetch(`${baseURL}/api/client/transactions?${queryParam}`, {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                    cache: 'no-store'
+                });
+
+                if (res.ok && isMounted) {
+                    const data = await res.json();
+                    const transactions = Array.isArray(data) ? data : (data.bookings || data.data || []);
+
+                    // 🟢 Dynamically calculate Total Investment sum ONLY
+                    const totalSpentSum = transactions.reduce((acc, curr) => {
+                        const amount = Number(curr.amount || curr.fee || curr.totalPrice || curr.price || 0);
+                        return acc + (isNaN(amount) ? 0 : amount);
+                    }, 0);
+
+                    // Update stats while keeping active & completed counts static
+                    setStats(prev => ({
+                        ...prev,
+                        totalSpent: totalSpentSum
+                    }));
+                }
+            } catch (err) {
+                console.error('Error loading client transaction stats:', err);
+            } finally {
+                if (isMounted) setIsLoading(false);
+            }
+        }
+
+        fetchDashboardData();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [clientId, clientEmail, status]);
 
     return (
         <div className="min-h-screen bg-background text-text p-4 sm:p-6 lg:p-8 space-y-8 max-w-7xl mx-auto">
@@ -106,7 +161,7 @@ const ClientDashboardOverviewPage = () => {
                             <Sparkles size={14} /> Client Portal
                         </div>
                         <h1 className="text-3xl sm:text-4xl font-black text-slate-600 dark:text-slate-100 tracking-tight">
-                            Welcome Back, <span className="text-secondary">Client</span>
+                            Welcome Back, <span className="text-secondary">{user?.name?.trim() || 'Client'}</span>
                         </h1>
                         <p className="text-neutral-400 text-sm sm:text-base max-w-xl">
                             Manage your legal consultations, review document updates, and connect with top legal professionals.
@@ -125,45 +180,47 @@ const ClientDashboardOverviewPage = () => {
                 </div>
             </div>
 
-            {/* Key Metrics Stats Grid (Shows StatCardSkeleton when loading) */}
-            {isLoading ? (
+            {/* Key Metrics Stats Grid */}
+            {isLoading || status === 'loading' ? (
                 <StatCardSkeleton count={4} />
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-                    {/* Stat 1 */}
+                    {/* Stat 1: Active / Upcoming Consultations (Restored Static) */}
                     <div className="rounded-2xl p-5 border border-secondary/15 bg-surface/80 dark:bg-neutral-900/60 backdrop-blur-xl shadow-lg flex items-center justify-between group hover:border-secondary/40 transition-all">
                         <div>
                             <p className="text-xs font-bold text-text-secondary uppercase tracking-wider">Upcoming Sessions</p>
-                            <p className="text-2xl sm:text-3xl font-black text-text mt-1">{clientStats.activeConsultations}</p>
+                            <p className="text-2xl sm:text-3xl font-black text-text mt-1">{stats.activeConsultations}</p>
                         </div>
                         <div className="h-12 w-12 rounded-2xl bg-secondary/10 border border-secondary/20 flex items-center justify-center text-secondary group-hover:scale-110 transition-transform">
                             <Calendar size={24} />
                         </div>
                     </div>
 
-                    {/* Stat 2 */}
+                    {/* Stat 2: Completed Sessions (Restored Static) */}
                     <div className="rounded-2xl p-5 border border-secondary/15 bg-surface/80 dark:bg-neutral-900/60 backdrop-blur-xl shadow-lg flex items-center justify-between group hover:border-secondary/40 transition-all">
                         <div>
                             <p className="text-xs font-bold text-text-secondary uppercase tracking-wider">Completed Sessions</p>
-                            <p className="text-2xl sm:text-3xl font-black text-text mt-1">{clientStats.completedSessions}</p>
+                            <p className="text-2xl sm:text-3xl font-black text-text mt-1">{stats.completedSessions}</p>
                         </div>
                         <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-500 group-hover:scale-110 transition-transform">
                             <UserCheck size={24} />
                         </div>
                     </div>
 
-                    {/* Stat 3 */}
+                    {/* Stat 3: Dynamic Total Investment / Spent */}
                     <div className="rounded-2xl p-5 border border-secondary/15 bg-surface/80 dark:bg-neutral-900/60 backdrop-blur-xl shadow-lg flex items-center justify-between group hover:border-secondary/40 transition-all">
                         <div>
                             <p className="text-xs font-bold text-text-secondary uppercase tracking-wider">Total Investment</p>
-                            <p className="text-2xl sm:text-3xl font-black text-text mt-1">{clientStats.totalSpent}</p>
+                            <p className="text-2xl sm:text-3xl font-black text-text mt-1">
+                                ${stats.totalSpent.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </p>
                         </div>
                         <div className="h-12 w-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform">
                             <Briefcase size={24} />
                         </div>
                     </div>
 
-                    {/* Stat 4 */}
+                    {/* Stat 4: Security Status */}
                     <div className="rounded-2xl p-5 border border-secondary/15 bg-surface/80 dark:bg-neutral-900/60 backdrop-blur-xl shadow-lg flex items-center justify-between group hover:border-secondary/40 transition-all">
                         <div>
                             <p className="text-xs font-bold text-text-secondary uppercase tracking-wider">Security Protection</p>
@@ -198,9 +255,15 @@ const ClientDashboardOverviewPage = () => {
                         </Link>
                     </div>
 
-                    {/* Show BookingCardSkeleton when loading */}
-                    {isLoading ? (
+                    {isLoading || status === 'loading' ? (
                         <BookingCardSkeleton count={2} />
+                    ) : upcomingBookings.length === 0 ? (
+                        <div className="p-8 text-center rounded-2xl bg-surface/80 dark:bg-neutral-900/70 border border-secondary/20">
+                            <p className="text-text-secondary text-sm">No upcoming legal consultations scheduled.</p>
+                            <Link href="/lawyers" className="mt-3 inline-block text-xs font-bold text-secondary hover:underline">
+                                Browse available attorneys →
+                            </Link>
+                        </div>
                     ) : (
                         <div className="space-y-4">
                             {upcomingBookings.map((booking) => (
@@ -210,7 +273,7 @@ const ClientDashboardOverviewPage = () => {
                                 >
                                     <div className="flex items-center gap-4">
                                         <Image
-                                            src={booking.avatar}
+                                            src={booking.lawyerAvatar}
                                             alt={booking.lawyerName}
                                             width={800}
                                             height={800}
@@ -219,7 +282,7 @@ const ClientDashboardOverviewPage = () => {
                                         <div className="space-y-1">
                                             <div className="flex items-center gap-2">
                                                 <h3 className="font-bold text-text text-base sm:text-lg">{booking.lawyerName}</h3>
-                                                <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                                                <span className="px-2 py-0.5 text-[10px] font-bold rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 capitalize">
                                                     {booking.status}
                                                 </span>
                                             </div>
@@ -265,21 +328,23 @@ const ClientDashboardOverviewPage = () => {
                 {/* Right Column (1 Col): Activity Log & Quick Actions */}
                 <div className="space-y-6">
 
-                    {/* Recent Activity Card (Shows ActivityListSkeleton when loading) */}
+                    {/* Recent Activity Card */}
                     <div className="p-6 rounded-2xl bg-surface/80 dark:bg-neutral-900/70 border border-secondary/20 backdrop-blur-xl shadow-xl space-y-6">
                         <h2 className="text-lg font-bold text-text flex items-center gap-2">
                             <Clock className="text-secondary" size={18} /> Recent Activity
                         </h2>
 
-                        {isLoading ? (
+                        {isLoading || status === 'loading' ? (
                             <ActivityListSkeleton count={3} />
+                        ) : recentActivities.length === 0 ? (
+                            <p className="text-xs text-text-secondary">No recent activities logged.</p>
                         ) : (
                             <div className="space-y-4">
                                 {recentActivities.map((act) => {
-                                    const IconComp = act.icon;
+                                    const IconComp = act.icon || CheckCircle2;
                                     return (
                                         <div key={act.id} className="flex items-start gap-3.5 pb-3 border-b border-neutral-100 dark:border-neutral-800/60 last:border-0 last:pb-0">
-                                            <div className={`p-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 shrink-0 ${act.iconColor}`}>
+                                            <div className={`p-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 shrink-0 ${act.iconColor || 'text-secondary'}`}>
                                                 <IconComp size={16} />
                                             </div>
                                             <div className="space-y-0.5 text-xs">
