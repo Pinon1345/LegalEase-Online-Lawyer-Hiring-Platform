@@ -1,30 +1,34 @@
-"use client";
+'use client';
 
 import React from 'react';
 import { Mail, Phone, FileText, Sparkles, ShieldCheck, Edit3, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 
 export default function ClientProfileCard({ profile, onEdit, onDeleteClick }) {
-    const fullName = `${profile.firstName} ${profile.middleName ? profile.middleName + ' ' : ''}${profile.lastName}`.trim();
+    // Construct dynamic full name handling optional middle name
+    const fullName = `${profile?.firstName || ''} ${profile?.middleName ? profile.middleName + ' ' : ''}${profile?.lastName || ''}`.trim();
 
     return (
         <div className="bg-surface/80 dark:bg-neutral-900/80 border border-secondary/30 backdrop-blur-2xl rounded-3xl p-6 sm:p-8 shadow-2xl relative overflow-hidden space-y-6">
 
-            {/* Background Glow */}
+            {/* Background Accent Glow */}
             <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/10 rounded-full blur-2xl pointer-events-none" />
 
+            {/* Top Status Header */}
             <div className="flex items-center justify-between border-b border-neutral-200 dark:border-neutral-800 pb-4">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-xs font-bold">
                     <ShieldCheck size={14} /> Active Client Profile
                 </span>
-                <span className="text-[11px] text-text-secondary font-mono">ID: CLT-8820</span>
+                <span className="text-[11px] text-text-secondary font-mono">
+                    ID: {profile?._id ? `CLT-${profile._id.slice(-6).toUpperCase()}` : 'CLT-ACTIVE'}
+                </span>
             </div>
 
             {/* Profile Picture & Name */}
             <div className="flex flex-col items-center text-center space-y-3">
                 <div className="relative">
                     <Image
-                        src={profile.imageUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80'}
+                        src={profile?.imageUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80'}
                         alt={fullName || 'Client'}
                         width={800}
                         height={800}
@@ -43,41 +47,45 @@ export default function ClientProfileCard({ profile, onEdit, onDeleteClick }) {
                 </div>
             </div>
 
-            {/* Info Grid */}
+            {/* Detailed Info Grid */}
             <div className="p-4 rounded-2xl bg-neutral-100/60 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700/50 space-y-3 text-xs">
-                <div className="flex items-center justify-between">
-                    <span className="text-text-secondary flex items-center gap-2">
+
+                {/* Email Row */}
+                <div className="flex items-center justify-between gap-2">
+                    <span className="text-text-secondary flex items-center gap-2 shrink-0">
                         <Mail size={14} className="text-secondary" /> Email:
                     </span>
-                    <span className="font-bold text-text truncate max-w-[180px]">
-                        {profile.email || 'Not provided'}
+                    <span className="font-bold text-text truncate max-w-[200px]">
+                        {profile?.email || 'Not provided'}
                     </span>
                 </div>
 
                 <div className="h-px bg-neutral-200 dark:bg-neutral-700/50" />
 
-                <div className="flex items-center justify-between">
-                    <span className="text-text-secondary flex items-center gap-2">
+                {/* Phone Row */}
+                <div className="flex items-center justify-between gap-2">
+                    <span className="text-text-secondary flex items-center gap-2 shrink-0">
                         <Phone size={14} className="text-secondary" /> Phone:
                     </span>
                     <span className="font-bold text-text">
-                        {profile.phone || 'Not provided'}
+                        {profile?.phone || 'Not provided'}
                     </span>
                 </div>
 
                 <div className="h-px bg-neutral-200 dark:bg-neutral-700/50" />
 
+                {/* Bio Summary Section */}
                 <div className="space-y-1 pt-1">
                     <span className="text-text-secondary font-bold flex items-center gap-2">
                         <FileText size={14} className="text-secondary" /> Bio Summary:
                     </span>
                     <p className="text-text-secondary text-xs leading-relaxed italic line-clamp-4 pl-1">
-                        &quot;{profile.bio || 'No bio overview provided yet.'}&quot;
+                        &quot;{profile?.bio || 'No bio overview provided yet.'}&quot;
                     </p>
                 </div>
             </div>
 
-            {/* Actions */}
+            {/* Action Buttons */}
             <div className="grid grid-cols-2 gap-3 pt-2">
                 <button
                     type="button"
