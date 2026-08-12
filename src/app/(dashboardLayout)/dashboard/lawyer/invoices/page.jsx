@@ -1,11 +1,8 @@
-import React from 'react';
+import { getUser } from "@/lib/api/session";
+import LawyerInvoicesView from "./LawyerInvoicesView";
 
-const LawyerInvoices = () => {
-    return (
-        <div>
-            <h2>This is Lawyer Invoices and Billing Page.</h2>
-        </div>
-    );
-};
+export default async function LawyerInvoicesPage() {
+    const user = await getUser();
 
-export default LawyerInvoices;
+    return <LawyerInvoicesView user={user} />;
+}
