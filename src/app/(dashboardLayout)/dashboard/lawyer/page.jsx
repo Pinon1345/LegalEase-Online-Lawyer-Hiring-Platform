@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
@@ -39,6 +39,7 @@ import Image from "next/image";
 
 import { useSession } from "@/lib/auth-client";
 import { Skeleton } from "@/components/ui/Skeleton";
+import { baseURL } from "@/lib/api/baseUrl";
 
 // Mock Analytics Data
 
@@ -109,10 +110,52 @@ const pendingRequests = [
 export default function LawyerDashboardOverview() {
     const [isAcceptingClients, setIsAcceptingClients] = useState(true);
 
-    // Get user Session
+    // Dynamic Stats State
+    const [totalEarnings, setTotalEarnings] = useState(0);
+    const [totalConsultations, setTotalConsultations] = useState(0);
+    const [isStatsLoading, setIsStatsLoading] = useState(true);
 
+    // Get user Session
     const { data: session, isPending } = useSession();
     const user = session?.user;
+
+    // Fetch Transaction Data for Dynamic Stats
+
+    useEffect(() => {
+        const fetchTransactionStats = async () => {
+            if (!user) return;
+
+            try {
+                setIsStatsLoading(true);
+
+                // Build query params based on lawyerId or email
+
+                const queryParam = user?.id
+                    ? `lawyerId=${encodeURIComponent(user.id)}`
+                    : `email=${encodeURIComponent(user.email)}`;
+
+                const res = await fetch(`${baseURL}/api/lawyer/transactions?${queryParam}`);
+                if (res.ok) {
+                    const data = await res.json();
+
+                    if (Array.isArray(data)) {
+                        // Calculate total earnings from payment amounts
+                        const earnings = data.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+                        setTotalEarnings(earnings);
+                        setTotalConsultations(data.length);
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to fetch transaction stats:", error);
+            } finally {
+                setIsStatsLoading(false);
+            }
+        };
+
+        if (user) {
+            fetchTransactionStats();
+        }
+    }, [user]);
 
     return (
         <div className="space-y-8 pb-10">
@@ -168,7 +211,7 @@ export default function LawyerDashboardOverview() {
             {/* Metrics Grid */}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                {/* Stat 1 */}
+                {/* Dynamic Stat 1: Total Earnings */}
                 <motion.div
                     whileHover={{ y: -3 }}
                     className="rounded-2xl border border-secondary/20 bg-surface/60 p-5 backdrop-blur-xl shadow-md relative overflow-hidden group"
@@ -180,7 +223,13 @@ export default function LawyerDashboardOverview() {
                         </div>
                     </div>
                     <div className="mt-4 flex items-baseline justify-between">
-                        <span className="text-2xl md:text-3xl font-extrabold text-text">$47,600</span>
+                        <span className="text-2xl md:text-3xl font-extrabold text-text">
+                            {isStatsLoading || isPending ? (
+                                <Skeleton className="h-8 w-28 rounded-lg" />
+                            ) : (
+                                `$${totalEarnings.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                            )}
+                        </span>
                         <span className="inline-flex items-center text-xs font-bold text-emerald-400 gap-0.5">
                             <TrendingUp size={14} /> +14.2%
                         </span>
@@ -209,7 +258,7 @@ export default function LawyerDashboardOverview() {
                     <p className="text-[11px] text-text-secondary mt-1">12 in court phase, 6 prep</p>
                 </motion.div>
 
-                {/* Stat 3 */}
+                {/* Dynamic Stat 3: Consultations */}
 
                 <motion.div
                     whileHover={{ y: -3 }}
@@ -222,7 +271,13 @@ export default function LawyerDashboardOverview() {
                         </div>
                     </div>
                     <div className="mt-4 flex items-baseline justify-between">
-                        <span className="text-2xl md:text-3xl font-extrabold text-text">128</span>
+                        <span className="text-2xl md:text-3xl font-extrabold text-text">
+                            {isStatsLoading || isPending ? (
+                                <Skeleton className="h-8 w-16 rounded-lg" />
+                            ) : (
+                                totalConsultations
+                            )}
+                        </span>
                         <span className="inline-flex items-center text-xs font-bold text-emerald-400 gap-0.5">
                             <TrendingUp size={14} /> +8.5%
                         </span>
