@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Star, Edit3, Trash2, Save, X, MessageSquare } from "lucide-react";
+import { Star, Edit3, Trash2, Save, X, MessageSquare, AlertTriangle } from "lucide-react";
 import toast from "react-hot-toast";
+import { Modal, Button } from "@heroui/react";
 import { useSession } from "@/lib/auth-client";
 import { baseURL } from "@/lib/api/baseUrl";
 
@@ -15,6 +16,10 @@ export default function ClientCommentsPage() {
     const [editingId, setEditingId] = useState(null);
     const [editText, setEditText] = useState("");
     const [editRating, setEditRating] = useState(5);
+
+    // Delete Modal States
+    const [deletingId, setDeletingId] = useState(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     // Fetch user's comments
     useEffect(() => {
@@ -39,7 +44,7 @@ export default function ClientCommentsPage() {
                 console.error("Error fetching comments:", error);
             } finally {
                 if (isMounted) {
-                    setLoading(false); // Stop loading indicator
+                    setLoading(false);
                 }
             }
         };
@@ -83,7 +88,6 @@ export default function ClientCommentsPage() {
 
             toast.success("Comment updated successfully!");
 
-            // Update comments state locally
             setComments((prev) =>
                 prev.map((item) =>
                     item._id === id
@@ -98,26 +102,41 @@ export default function ClientCommentsPage() {
         }
     };
 
-    // DELETE Comment
-    const handleDeleteComment = async (id) => {
-        if (!confirm("Are you sure you want to delete this comment?")) return;
+    // Open & Close Delete Modal
+    const handleOpenDeleteModal = (id) => {
+        setDeletingId(id);
+    };
 
+    const handleCloseDeleteModal = () => {
+        if (isDeleting) return;
+        setDeletingId(null);
+    };
+
+    // Confirm DELETE Comment
+    const handleConfirmDelete = async () => {
+        if (!deletingId) return;
+
+        setIsDeleting(true);
         try {
-            const res = await fetch(`${baseURL}/api/comments/${id}`, {
+            const res = await fetch(`${baseURL}/api/comments/${deletingId}`, {
                 method: "DELETE",
             });
 
-            if (!res.ok) throw new Error("Failed to delete");
+            if (!res.ok) throw new Error("Failed to delete comment");
 
             toast.success("Comment deleted successfully!");
-            setComments((prev) => prev.filter((item) => item._id !== id));
+            setComments((prev) => prev.filter((item) => item._id !== deletingId));
+            setDeletingId(null);
         } catch (error) {
-            toast.error(error.message);
+            toast.error(error.message || "Failed to delete comment");
+        } finally {
+            setIsDeleting(false);
         }
     };
 
     return (
         <div className="p-6 max-w-5xl mx-auto space-y-6">
+            {/* Header */}
             <div className="flex items-center gap-3 border-b border-border/80 pb-4">
                 <div className="p-3 rounded-2xl bg-secondary/10 text-secondary border border-secondary/20">
                     <MessageSquare size={24} />
@@ -134,7 +153,9 @@ export default function ClientCommentsPage() {
                 <p className="text-sm text-text-secondary">Loading your feedback...</p>
             ) : comments.length === 0 ? (
                 <div className="p-8 text-center rounded-3xl border border-border/80 bg-surface/40">
-                    <p className="text-sm text-text-secondary">You haven&apos;t posted any reviews yet.</p>
+                    <p className="text-sm text-text-secondary">
+                        You haven&apos;t posted any reviews yet.
+                    </p>
                 </div>
             ) : (
                 <div className="space-y-4">
@@ -146,7 +167,10 @@ export default function ClientCommentsPage() {
                             <div className="flex items-center justify-between">
                                 <div>
                                     <h4 className="font-bold text-text text-base">
-                                        Lawyer: <span className="text-secondary">{item.lawyerName || "Legal Advocate"}</span>
+                                        Lawyer:{" "}
+                                        <span className="text-secondary">
+                                            {item.lawyerName || "Legal Advocate"}
+                                        </span>
                                     </h4>
                                     <span className="text-[11px] text-text-secondary">
                                         Posted on: {new Date(item.createdAt).toLocaleDateString()}
@@ -164,7 +188,7 @@ export default function ClientCommentsPage() {
                                             <Edit3 size={16} />
                                         </button>
                                         <button
-                                            onClick={() => handleDeleteComment(item._id)}
+                                            onClick={() => handleOpenDeleteModal(item._id)}
                                             className="p-2 rounded-xl bg-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition"
                                             title="Delete"
                                         >
@@ -232,7 +256,9 @@ export default function ClientCommentsPage() {
                                         ))}
                                     </div>
                                     <div className="flex flex-col md:flex-col lg:flex-row items-center gap-2 mt-4">
-                                        <h2 className="font-bold text-purple-600 dark:text-purple-400">The Comment:</h2>
+                                        <h2 className="font-bold text-purple-600 dark:text-purple-400">
+                                            The Comment:
+                                        </h2>
                                         <p className="text-sm text-text-secondary leading-relaxed">
                                             {item.commentText}
                                         </p>
@@ -242,6 +268,63 @@ export default function ClientCommentsPage() {
                         </div>
                     ))}
                 </div>
+            )}
+
+            {/* HeroUI DELETE CONFIRMATION MODAL */}
+            {Boolean(deletingId) && (
+                <Modal isOpen={Boolean(deletingId)} onClose={handleCloseDeleteModal}>
+                    <Modal.Backdrop>
+                        <Modal.Container>
+                            <Modal.Dialog className="bg-surface border border-border/80 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-5">
+                                <Modal.CloseTrigger
+                                    onClick={handleCloseDeleteModal}
+                                    className="absolute top-4 right-4 text-text-secondary hover:text-text cursor-pointer p-1"
+                                >
+                                    <X size={18} />
+                                </Modal.CloseTrigger>
+
+                                <Modal.Header className="flex items-center gap-3 pb-2 border-b border-border/60">
+                                    <div className="p-2.5 rounded-2xl bg-rose-500/10 text-rose-500 border border-rose-500/20">
+                                        <AlertTriangle size={22} />
+                                    </div>
+                                    <div>
+                                        <Modal.Heading className="text-lg font-black text-text">
+                                            Confirm Deletion
+                                        </Modal.Heading>
+                                        <p className="text-xs text-text-secondary">
+                                            This action cannot be undone.
+                                        </p>
+                                    </div>
+                                </Modal.Header>
+
+                                <Modal.Body className="py-2">
+                                    <p className="text-sm text-text-secondary leading-relaxed">
+                                        Are you sure you want to <span className="font-bold text-red-600 ml-1 mr-2 pt-1">DELETE</span>this comment? Once deleted,
+                                        it will be permanently removed from the <span className="font-bold">Lawyer&apos;s Profile</span>.
+                                    </p>
+                                </Modal.Body>
+
+                                <Modal.Footer className="flex items-center justify-end gap-3 pt-4 border-t border-border/60">
+                                    <Button
+                                        onClick={handleCloseDeleteModal}
+                                        disabled={isDeleting}
+                                        className="px-4 py-2.5 rounded-xl bg-neutral-800 text-text-secondary text-xs font-bold hover:bg-neutral-700 transition cursor-pointer"
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        onClick={handleConfirmDelete}
+                                        disabled={isDeleting}
+                                        className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold flex items-center gap-2 transition cursor-pointer disabled:opacity-50"
+                                    >
+                                        <Trash2 size={14} />
+                                        {isDeleting ? "Deleting..." : "Confirm Delete"}
+                                    </Button>
+                                </Modal.Footer>
+                            </Modal.Dialog>
+                        </Modal.Container>
+                    </Modal.Backdrop>
+                </Modal>
             )}
         </div>
     );

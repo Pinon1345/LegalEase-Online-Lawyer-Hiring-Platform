@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
     Star,
     MessageSquare,
@@ -8,7 +8,6 @@ import {
     ShieldAlert,
     Lock,
     UserX,
-    AlertTriangle,
     ArrowRight,
 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -31,77 +30,72 @@ export default function CommentsSection({ lawyer }) {
     const isClient = user?.role === "client";
     const displayRole = user?.role ? user.role.toUpperCase() : "GUEST";
 
-    // 1. Fetch Comments for this Lawyer
+    // 1. Standalone function to load comments (used on initial load and post-submit)
+    const loadComments = useCallback(async () => {
+        if (!lawyer?._id) return;
+
+        try {
+            const res = await fetch(`${baseURL}/api/comments?lawyerId=${lawyer._id}`);
+            if (!res.ok) throw new Error("Failed to fetch comments");
+
+            const data = await res.json();
+            setComments(Array.isArray(data) ? data : []);
+        } catch (error) {
+            console.error("Error fetching comments:", error);
+            setComments([]);
+        } finally {
+            setLoading(false);
+        }
+    }, [lawyer]);
+
+    // 2. Standalone function to check payment status
+    const checkPaymentStatus = useCallback(async () => {
+        if (isClient && user?.email && lawyer?._id) {
+            try {
+                const res = await fetch(
+                    `${baseURL}/api/check-payment?clientEmail=${user.email}&lawyerId=${lawyer._id}`
+                );
+                if (!res.ok) throw new Error("Failed to check payment status");
+
+                const data = await res.json();
+                setIsPaidClient(data.hasPaid);
+            } catch (error) {
+                console.error("Error checking payment status:", error);
+            }
+        }
+    }, [isClient, user, lawyer]);
+
+    // Initial Load Effect (Async wrapper satisfies React Compiler)
     useEffect(() => {
         let isMounted = true;
 
-        // 1. Fetch Comments Function
-        const fetchComments = async () => {
-            if (!lawyer?._id) return;
-
-            try {
-                const res = await fetch(`${baseURL}/api/comments?lawyerId=${lawyer._id}`);
-                if (!res.ok) throw new Error("Failed to fetch comments");
-
-                const data = await res.json();
-                if (isMounted) {
-                    setComments(data);
-                }
-            } catch (error) {
-                console.error("Error fetching comments:", error);
-            } finally {
-                if (isMounted) {
-                    setLoading(false);
-                }
+        const initData = async () => {
+            if (isMounted) {
+                await Promise.all([loadComments(), checkPaymentStatus()]);
             }
         };
 
-        // 2. Check Payment Status Function
-        const checkPaymentStatus = async () => {
-            if (isClient && user?.email && lawyer?._id) {
-                try {
-                    const res = await fetch(
-                        `${baseURL}/api/check-payment?clientEmail=${user.email}&lawyerId=${lawyer._id}`
-                    );
-                    if (!res.ok) throw new Error("Failed to check payment status");
+        initData();
 
-                    const data = await res.json();
-                    if (isMounted) {
-                        setIsPaidClient(data.hasPaid); // Fixed reference here
-                    }
-                } catch (error) {
-                    console.error("Error checking payment status:", error);
-                }
-            }
-        };
-
-        // Execute fetches
-        fetchComments();
-        checkPaymentStatus();
-
-        // Cleanup prevents state updates if component unmounts
         return () => {
             isMounted = false;
         };
-    }, [lawyer?._id, user?.email, isClient]);
+    }, [loadComments, checkPaymentStatus]);
 
-    // Handle Submit Comment
+    // 3. Handle Submit Comment
     const handleSubmitComment = async (e) => {
         e.preventDefault();
 
-        // Check 1: Must be logged in as client
         if (!isClient) {
             toast.error("Please login as a client to post a review.");
             return;
         }
 
-        // Check 2: If not paid, trigger the Alert Modal
         if (!isPaidClient) {
             setShowPayModal(true);
             return;
         }
 
-        // Check 3: Comment text required
         if (!newComment.trim()) {
             toast.error("Please enter a comment before submitting.");
             return;
@@ -132,7 +126,7 @@ export default function CommentsSection({ lawyer }) {
 
             toast.success("Review posted successfully!");
             setNewComment("");
-            fetchComments(); // Refresh list from backend
+            loadComments();
         } catch (error) {
             toast.error(error.message || "Something went wrong.");
         }
@@ -166,7 +160,7 @@ export default function CommentsSection({ lawyer }) {
                         {lawyer?.averageRating || 5.0}
                     </span>
                     <span className="text-xs text-text-secondary">
-                        ({comments.length})
+                        ({comments?.length || 0})
                     </span>
                 </div>
             </div>
@@ -262,12 +256,12 @@ export default function CommentsSection({ lawyer }) {
             {/* Comments List */}
             <div className="space-y-4">
                 <span className="text-xs font-extrabold uppercase tracking-wider text-text-secondary block">
-                    Recent Feedback ({comments.length})
+                    Recent Feedback ({comments?.length || 0})
                 </span>
 
                 {loading ? (
                     <p className="text-xs text-text-secondary">Loading reviews...</p>
-                ) : comments.length === 0 ? (
+                ) : !comments || comments.length === 0 ? (
                     <p className="text-xs text-text-secondary italic">No reviews yet. Be the first to review!</p>
                 ) : (
                     comments.map((item) => (
@@ -288,7 +282,7 @@ export default function CommentsSection({ lawyer }) {
                                 </span>
                             </div>
                             <div className="flex items-center gap-1">
-                                {Array.from({ length: item.rating }).map((_, i) => (
+                                {Array.from({ length: item.rating || 5 }).map((_, i) => (
                                     <Star
                                         key={i}
                                         size={13}
