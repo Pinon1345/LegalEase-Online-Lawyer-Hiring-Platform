@@ -5,6 +5,7 @@ import LawyerCard from "@/components/LawyerCard";
 import { Search, SlidersHorizontal, ArrowUpDown, Filter, Scale, AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { getLawyers } from "@/lib/api/lawyers/data";
+import { motion } from "motion/react";
 
 // Predefined Legal Specializations
 
@@ -98,12 +99,24 @@ export default function BrowseLawyersPage() {
         <div className="min-h-screen bg-background text-text px-4 py-8 md:px-8 lg:px-12 max-w-7xl mx-auto space-y-10">
             {/* Page Header */}
             <div className="text-center space-y-4 max-w-3xl mx-auto">
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-secondary/10 border border-secondary/20 text-secondary text-xs font-bold uppercase tracking-wider">
+                <motion.div
+
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                    onHoverStart={() => console.log('hover started!')}
+
+                    className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-secondary/10 border border-secondary/20 text-secondary text-xs font-bold uppercase tracking-wider">
                     <Scale size={16} /> Legal Ease Directory
-                </div>
-                <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-text tracking-tight">
+                </motion.div>
+                <motion.h1
+
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8 }}
+
+                    className="text-3xl sm:text-4xl md:text-5xl font-black text-text tracking-tight">
                     Browse & Hire Expert <span className="text-secondary">Legal Advocates</span>
-                </h1>
+                </motion.h1>
                 <p className="text-text-secondary text-sm md:text-base">
                     Discover verified attorneys across various specializations tailored to your legal requirements.
                 </p>

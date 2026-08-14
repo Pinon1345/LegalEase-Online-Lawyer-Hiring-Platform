@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { motion } from "motion/react";
 import {
     FaGavel,
     FaBalanceScale,
@@ -129,10 +130,16 @@ const HeroBanner = () => {
 
                 {/* Header Status Badge */}
                 <div className="mb-6 flex justify-center md:justify-start">
-                    <div className="inline-flex items-center gap-2.5 rounded-full border border-secondary/30 bg-surface/80 px-4 py-1.5 backdrop-blur-md text-xs sm:text-sm font-semibold text-text shadow-sm gold-pulse">
+                    <motion.div
+
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8 }}
+
+                        className="inline-flex items-center gap-2.5 rounded-full border border-secondary/30 bg-surface/80 px-4 py-1.5 backdrop-blur-md text-xs sm:text-sm font-semibold text-text shadow-sm gold-pulse">
                         <FaGavel className="text-secondary animate-bounce" size={14} />
                         <span className="tracking-wide">Find & Hire Expert Legal Counsel</span>
-                    </div>
+                    </motion.div>
                 </div>
 
                 {/* Carousel Card Container */}
@@ -144,10 +151,14 @@ const HeroBanner = () => {
                         <div className="lg:col-span-6 flex flex-col justify-center order-2 lg:order-1 fade-up key={currentSlide}">
 
                             {/* Slide-specific Status Badge */}
-                            <div className="mb-4 inline-flex items-center gap-2 rounded-lg bg-secondary/10 px-3 py-1.5 text-xs font-semibold text-secondary w-fit">
+                            <motion.div
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.95 }}
+                                onHoverStart={() => console.log('hover started!')}
+                                className="mb-4 inline-flex items-center gap-2 rounded-lg bg-secondary/10 px-3 py-1.5 text-xs font-semibold text-secondary w-fit">
                                 <BadgeIcon size={14} />
                                 <span>{activeSlide.badge}</span>
-                            </div>
+                            </motion.div>
 
                             {/* Main Slide Title */}
                             <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-text tracking-tight leading-tight">
