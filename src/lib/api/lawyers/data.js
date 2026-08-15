@@ -23,12 +23,28 @@ export const lawyerProfile = async (userId) => {
 // Fetch all lawyers from http://localhost:5000/api/lawyers
 
 
-export const getLawyers = async () => {
+// export const getLawyers = async () => {
+//     try {
+//         const data = await serverFetch("/api/lawyers");
+//         return data;
+//     } catch (error) {
+//         console.error("Error fetching lawyers:", error);
+//         return [];
+//     }
+// };
+
+
+
+export const getLawyers = async (params = {}) => {
     try {
-        const data = await serverFetch("/api/lawyers");
+        // Convert params object (page, limit, search, etc.) into URL query string
+        const queryString = new URLSearchParams(params).toString();
+        const endpoint = queryString ? `/api/lawyers?${queryString}` : "/api/lawyers";
+
+        const data = await serverFetch(endpoint);
         return data;
     } catch (error) {
         console.error("Error fetching lawyers:", error);
-        return [];
+        return { lawyers: [], totalPages: 1, totalLawyers: 0 };
     }
 };
