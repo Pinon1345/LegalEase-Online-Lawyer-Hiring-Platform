@@ -5,85 +5,82 @@ import {
     CreditCard,
     Search,
     Filter,
-    Download,
     CheckCircle2,
     Clock,
     XCircle,
     RotateCcw,
     DollarSign,
     TrendingUp,
-    ArrowUpRight,
     Eye,
-    Calendar,
     User,
     Scale,
     FileSpreadsheet,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
-// Mock Transaction Data (Replace or populate via your API call, e.g. ${baseURL}/api/admin/transactions)
+// Mock Transaction Data
 const INITIAL_TRANSACTIONS = [
     {
         id: "TXN-902418",
-        clientName: "John Doe",
-        clientEmail: "john.doe@example.com",
-        lawyerName: "Adv. Sarah Jenkins",
+        userEmail: "john.doe@example.com",
         lawyerEmail: "sarah.j@legalease.com",
+        clientName: "John Doe",
+        lawyerName: "Adv. Sarah Jenkins",
         service: "Corporate Legal Consultation",
-        amount: 150.00,
-        platformFee: 15.00,
+        amount: 150.0,
+        platformFee: 15.0,
         status: "Completed",
         paymentMethod: "Credit Card (Stripe)",
         date: "2026-08-14 14:22",
     },
     {
         id: "TXN-902419",
-        clientName: "Michael Chang",
-        clientEmail: "m.chang@example.com",
-        lawyerName: "Adv. Tariq Rahman",
+        userEmail: "m.chang@example.com",
         lawyerEmail: "tariq.r@legalease.com",
+        clientName: "Michael Chang",
+        lawyerName: "Adv. Tariq Rahman",
         service: "Criminal Defense Review",
-        amount: 300.00,
-        platformFee: 30.00,
+        amount: 300.0,
+        platformFee: 30.0,
         status: "Completed",
         paymentMethod: "PayPal",
         date: "2026-08-14 11:05",
     },
     {
         id: "TXN-902420",
-        clientName: "Sophia Martinez",
-        clientEmail: "sophia.m@example.com",
-        lawyerName: "Adv. Elena Rostova",
+        userEmail: "sophia.m@example.com",
         lawyerEmail: "elena.r@legalease.com",
+        clientName: "Sophia Martinez",
+        lawyerName: "Adv. Elena Rostova",
         service: "IP & Trademark Filing",
-        amount: 450.00,
-        platformFee: 45.00,
+        amount: 450.0,
+        platformFee: 45.0,
         status: "Pending",
         paymentMethod: "Bank Transfer",
         date: "2026-08-13 18:40",
     },
     {
         id: "TXN-902421",
-        clientName: "David Miller",
-        clientEmail: "d.miller@example.com",
-        lawyerName: "Adv. Sarah Jenkins",
+        userEmail: "d.miller@example.com",
         lawyerEmail: "sarah.j@legalease.com",
+        clientName: "David Miller",
+        lawyerName: "Adv. Sarah Jenkins",
         service: "Contract Drafting",
-        amount: 200.00,
-        platformFee: 20.00,
+        amount: 200.0,
+        platformFee: 20.0,
         status: "Refunded",
         paymentMethod: "Credit Card (Stripe)",
         date: "2026-08-12 09:15",
     },
     {
         id: "TXN-902422",
-        clientName: "Emma Watson",
-        clientEmail: "emma.w@example.com",
-        lawyerName: "Adv. Tariq Rahman",
+        userEmail: "emma.w@example.com",
         lawyerEmail: "tariq.r@legalease.com",
+        clientName: "Emma Watson",
+        lawyerName: "Adv. Tariq Rahman",
         service: "Bail Hearing Consultation",
-        amount: 180.00,
-        platformFee: 18.00,
+        amount: 180.0,
+        platformFee: 18.0,
         status: "Failed",
         paymentMethod: "Credit Card (Stripe)",
         date: "2026-08-11 16:50",
@@ -100,9 +97,10 @@ export default function AdminAllTransaction() {
         return INITIAL_TRANSACTIONS.filter((txn) => {
             const matchesSearch =
                 txn.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                txn.userEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                txn.lawyerEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 txn.clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                txn.lawyerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                txn.service.toLowerCase().includes(searchTerm.toLowerCase());
+                txn.lawyerName.toLowerCase().includes(searchTerm.toLowerCase());
 
             const matchesStatus =
                 statusFilter === "All" || txn.status === statusFilter;
@@ -130,22 +128,18 @@ export default function AdminAllTransaction() {
     const handleExportCSV = () => {
         const headers = [
             "Transaction ID",
-            "Client Name",
-            "Lawyer Name",
-            "Service",
+            "User Email",
+            "Lawyer Email",
             "Amount ($)",
-            "Platform Fee ($)",
             "Status",
             "Date",
         ];
 
         const rows = filteredTransactions.map((t) => [
             t.id,
-            `"${t.clientName}"`,
-            `"${t.lawyerName}"`,
-            `"${t.service}"`,
+            `"${t.userEmail}"`,
+            `"${t.lawyerEmail}"`,
             t.amount,
-            t.platformFee,
             t.status,
             t.date,
         ]);
@@ -203,14 +197,14 @@ export default function AdminAllTransaction() {
                 <div>
                     <div className="flex items-center gap-2">
                         <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                            Financial Audit
+                            Financial Management
                         </span>
                     </div>
                     <h1 className="text-3xl font-black text-white mt-2">
-                        All Transactions
+                        View All Transactions
                     </h1>
                     <p className="text-xs text-neutral-400">
-                        Monitor, inspect, and export all client-to-advocate payments processed across LegalEase.
+                        Comprehensive history of all payment records processed on LegalEase.
                     </p>
                 </div>
 
@@ -257,7 +251,7 @@ export default function AdminAllTransaction() {
                         </div>
                         <span className="text-[10px] font-bold text-neutral-400">Total Records</span>
                     </div>
-                    <p className="text-xs text-neutral-400 font-medium">Total Attempts</p>
+                    <p className="text-xs text-neutral-400 font-medium">Total Transactions</p>
                     <h3 className="text-2xl font-black text-white">{INITIAL_TRANSACTIONS.length}</h3>
                 </div>
 
@@ -266,7 +260,7 @@ export default function AdminAllTransaction() {
                         <div className="p-2.5 rounded-2xl bg-rose-500/10 text-rose-400">
                             <RotateCcw size={20} />
                         </div>
-                        <span className="text-[10px] font-bold text-rose-400">Refund Ratio</span>
+                        <span className="text-[10px] font-bold text-rose-400">Issues</span>
                     </div>
                     <p className="text-xs text-neutral-400 font-medium">Refunded / Failed</p>
                     <h3 className="text-2xl font-black text-white">2</h3>
@@ -280,14 +274,14 @@ export default function AdminAllTransaction() {
                     <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400" />
                     <input
                         type="text"
-                        placeholder="Search by ID, client, lawyer or service..."
+                        placeholder="Search by ID, user email, or lawyer email..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-neutral-950/80 border border-white/10 text-white text-xs placeholder:text-neutral-500 focus:outline-none focus:border-amber-500/50 transition"
                     />
                 </div>
 
-                {/* Status Pills */}
+                {/* Status Filter */}
                 <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-2 md:pb-0">
                     <span className="text-xs text-neutral-500 flex items-center gap-1 mr-1">
                         <Filter size={13} /> Status:
@@ -297,8 +291,8 @@ export default function AdminAllTransaction() {
                             key={status}
                             onClick={() => setStatusFilter(status)}
                             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer whitespace-nowrap ${statusFilter === status
-                                    ? "bg-amber-500 text-neutral-950 shadow-md"
-                                    : "bg-neutral-950/60 text-neutral-400 hover:text-white hover:bg-neutral-800"
+                                ? "bg-amber-500 text-neutral-950 shadow-md"
+                                : "bg-neutral-950/60 text-neutral-400 hover:text-white hover:bg-neutral-800"
                                 }`}
                         >
                             {status}
@@ -307,26 +301,24 @@ export default function AdminAllTransaction() {
                 </div>
             </div>
 
-            {/* Transactions Table */}
+            {/* Requirements-Compliant Transactions Table */}
             <div className="rounded-3xl border border-white/10 bg-neutral-900/50 backdrop-blur-xl overflow-hidden shadow-2xl">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
                             <tr className="border-b border-white/10 bg-neutral-950/60 text-[11px] font-black uppercase tracking-wider text-neutral-400">
                                 <th className="py-4 px-6">Transaction ID</th>
-                                <th className="py-4 px-6">Client</th>
-                                <th className="py-4 px-6">Assigned Advocate</th>
-                                <th className="py-4 px-6">Service</th>
+                                <th className="py-4 px-6">User Email</th>
+                                <th className="py-4 px-6">Lawyer Email</th>
                                 <th className="py-4 px-6">Amount</th>
-                                <th className="py-4 px-6">Status</th>
                                 <th className="py-4 px-6">Date</th>
-                                <th className="py-4 px-6 text-right">Actions</th>
+                                <th className="py-4 px-6 text-right">Details</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5 text-xs">
                             {filteredTransactions.length === 0 ? (
                                 <tr>
-                                    <td colSpan={8} className="py-12 text-center text-neutral-500">
+                                    <td colSpan={6} className="py-12 text-center text-neutral-500">
                                         No transaction records matched your search parameters.
                                     </td>
                                 </tr>
@@ -336,32 +328,40 @@ export default function AdminAllTransaction() {
                                         key={txn.id}
                                         className="hover:bg-white/[0.02] transition duration-200"
                                     >
+                                        {/* Transaction ID */}
                                         <td className="py-4 px-6 font-mono font-bold text-amber-400">
                                             {txn.id}
                                         </td>
+
+                                        {/* User Email */}
                                         <td className="py-4 px-6">
-                                            <div className="font-bold text-white">{txn.clientName}</div>
-                                            <div className="text-[10px] text-neutral-500">{txn.clientEmail}</div>
+                                            <div className="text-white font-medium">{txn.userEmail}</div>
+                                            <div className="text-[10px] text-neutral-500">{txn.clientName}</div>
                                         </td>
+
+                                        {/* Lawyer Email */}
                                         <td className="py-4 px-6">
-                                            <div className="font-semibold text-neutral-200">{txn.lawyerName}</div>
+                                            <div className="text-white font-medium">{txn.lawyerEmail}</div>
+                                            <div className="text-[10px] text-neutral-500">{txn.lawyerName}</div>
                                         </td>
-                                        <td className="py-4 px-6 max-w-[180px] truncate text-neutral-400" title={txn.service}>
-                                            {txn.service}
-                                        </td>
+
+                                        {/* Amount */}
                                         <td className="py-4 px-6">
                                             <div className="font-extrabold text-white">${txn.amount.toFixed(2)}</div>
-                                            <div className="text-[10px] text-emerald-400">Fee: ${txn.platformFee.toFixed(2)}</div>
+                                            <div className="mt-0.5">{getStatusBadge(txn.status)}</div>
                                         </td>
-                                        <td className="py-4 px-6">{getStatusBadge(txn.status)}</td>
+
+                                        {/* Date */}
                                         <td className="py-4 px-6 text-neutral-400 font-mono text-[11px]">
                                             {txn.date}
                                         </td>
+
+                                        {/* Action */}
                                         <td className="py-4 px-6 text-right">
                                             <button
                                                 onClick={() => setSelectedTxn(txn)}
                                                 className="p-2 rounded-xl bg-white/5 hover:bg-amber-500 hover:text-neutral-950 text-neutral-300 transition cursor-pointer"
-                                                title="View Full Receipt Details"
+                                                title="Inspect full transaction"
                                             >
                                                 <Eye size={15} />
                                             </button>
@@ -374,7 +374,7 @@ export default function AdminAllTransaction() {
                 </div>
             </div>
 
-            {/* Detail Inspector Modal */}
+            {/* Detail Modal */}
             {selectedTxn && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-950/80 backdrop-blur-md animate-fade-in">
                     <div className="bg-neutral-900 border border-white/10 rounded-3xl p-6 md:p-8 max-w-lg w-full shadow-2xl space-y-6 relative">
@@ -404,10 +404,10 @@ export default function AdminAllTransaction() {
                             <div className="grid grid-cols-2 gap-3">
                                 <div className="p-3 rounded-2xl bg-neutral-950 border border-white/5 space-y-1">
                                     <span className="text-[10px] uppercase font-bold text-neutral-500 flex items-center gap-1">
-                                        <User size={12} /> Client
+                                        <User size={12} /> User / Client
                                     </span>
                                     <p className="font-bold text-white">{selectedTxn.clientName}</p>
-                                    <p className="text-[10px] text-neutral-400 truncate">{selectedTxn.clientEmail}</p>
+                                    <p className="text-[10px] text-neutral-400 truncate">{selectedTxn.userEmail}</p>
                                 </div>
 
                                 <div className="p-3 rounded-2xl bg-neutral-950 border border-white/5 space-y-1">
@@ -421,7 +421,7 @@ export default function AdminAllTransaction() {
 
                             <div className="p-3 rounded-2xl bg-neutral-950 border border-white/5 space-y-2">
                                 <div className="flex justify-between">
-                                    <span className="text-neutral-400">Service Category</span>
+                                    <span className="text-neutral-400">Service</span>
                                     <span className="text-white font-medium">{selectedTxn.service}</span>
                                 </div>
                                 <div className="flex justify-between">
@@ -440,7 +440,7 @@ export default function AdminAllTransaction() {
                                     <span className="font-bold text-white">${selectedTxn.amount.toFixed(2)}</span>
                                 </div>
                                 <div className="flex justify-between text-emerald-400 font-bold border-t border-amber-500/20 pt-2">
-                                    <span>Platform Commission Earned</span>
+                                    <span>Platform Fee Earned</span>
                                     <span>+${selectedTxn.platformFee.toFixed(2)}</span>
                                 </div>
                             </div>
