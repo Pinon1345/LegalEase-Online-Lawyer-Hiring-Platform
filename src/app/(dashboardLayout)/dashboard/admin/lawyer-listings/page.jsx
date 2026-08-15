@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
     Scale,
     Search,
@@ -15,90 +15,91 @@ import {
     Mail,
     Phone,
     Award,
-    MoreVertical,
-    UserCheck,
-    UserX,
+    Loader2,
+    AlertCircle,
+    RefreshCw,
 } from "lucide-react";
 import toast from "react-hot-toast";
-
-// Initial Mock Lawyers Data
-const INITIAL_LAWYERS = [
-    {
-        id: "LWY-801",
-        name: "Adv. Sarah Jenkins",
-        email: "sarah.j@legalease.com",
-        phone: "+1 (555) 019-2834",
-        specialization: "Corporate & Business Law",
-        experience: "12 Years",
-        rating: 4.9,
-        reviewsCount: 128,
-        hourlyRate: 150,
-        status: "Verified",
-        joinedDate: "2025-11-20",
-        avatar: "https://i.pravatar.cc/150?u=sarah",
-        barNumber: "BAR-NY-90214",
-    },
-    {
-        id: "LWY-802",
-        name: "Adv. Tariq Rahman",
-        email: "tariq.r@legalease.com",
-        phone: "+1 (555) 014-9982",
-        specialization: "Criminal Defense",
-        experience: "8 Years",
-        rating: 4.7,
-        reviewsCount: 94,
-        hourlyRate: 180,
-        status: "Verified",
-        joinedDate: "2026-02-01",
-        avatar: "https://i.pravatar.cc/150?u=tariq",
-        barNumber: "BAR-CA-33819",
-    },
-    {
-        id: "LWY-803",
-        name: "Adv. Elena Rostova",
-        email: "elena.r@legalease.com",
-        phone: "+1 (555) 018-7711",
-        specialization: "Intellectual Property",
-        experience: "5 Years",
-        rating: 4.5,
-        reviewsCount: 42,
-        hourlyRate: 200,
-        status: "Pending Verification",
-        joinedDate: "2026-08-10",
-        avatar: "https://i.pravatar.cc/150?u=elena",
-        barNumber: "BAR-TX-77412",
-    },
-    {
-        id: "LWY-804",
-        name: "Adv. Marcus Vance",
-        email: "marcus.v@legalease.com",
-        phone: "+1 (555) 012-3344",
-        specialization: "Family & Divorce Law",
-        experience: "15 Years",
-        rating: 4.2,
-        reviewsCount: 65,
-        hourlyRate: 130,
-        status: "Suspended",
-        joinedDate: "2025-06-14",
-        avatar: "https://i.pravatar.cc/150?u=marcus",
-        barNumber: "BAR-FL-10928",
-    },
-];
+import Image from "next/image";
+import { baseURL } from "@/lib/api/baseUrl";
+import { MdMyLocation } from "react-icons/md";
 
 export default function AdminLawyersListing() {
-    const [lawyers, setLawyers] = useState(INITIAL_LAWYERS);
+    const [lawyers, setLawyers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState("All");
     const [selectedLawyer, setSelectedLawyer] = useState(null);
 
+    // Initial Data Fetching safely inside useEffect
+    useEffect(() => {
+        let isMounted = true;
+
+        const loadLawyers = async () => {
+            try {
+                setError(null);
+                const response = await fetch(`${baseURL}/api/lawyers`);
+                if (!response.ok) {
+                    throw new Error("Failed to fetch lawyer directory data.");
+                }
+                const data = await response.json();
+                if (isMounted) {
+                    setLawyers(data);
+                }
+            } catch (err) {
+                if (isMounted) {
+                    setError(err.message || "An unexpected error occurred.");
+                    toast.error("Could not load lawyers list");
+                }
+            } finally {
+                if (isMounted) {
+                    setLoading(false);
+                }
+            }
+        };
+
+        loadLawyers();
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
+    // Manual Refresh Handler
+    const handleRefresh = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await fetch(`${baseURL}/api/lawyers`);
+            if (!response.ok) {
+                throw new Error("Failed to fetch lawyer directory data.");
+            }
+            const data = await response.json();
+            setLawyers(data);
+            toast.success("Directory refreshed");
+        } catch (err) {
+            setError(err.message || "An unexpected error occurred.");
+            toast.error("Could not refresh lawyers list");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // Filter Logic
     const filteredLawyers = useMemo(() => {
         return lawyers.filter((lawyer) => {
+            const name = lawyer.name || "";
+            const email = lawyer.email || "";
+            const specialization = lawyer.specialization || "";
+            const barNumber = lawyer.barNumber || "";
+
             const matchesSearch =
-                lawyer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                lawyer.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                lawyer.specialization.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                lawyer.barNumber.toLowerCase().includes(searchTerm.toLowerCase());
+                name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                specialization.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                barNumber.toLowerCase().includes(searchTerm.toLowerCase());
 
             const matchesStatus =
                 statusFilter === "All" || lawyer.status === statusFilter;
@@ -107,14 +108,60 @@ export default function AdminLawyersListing() {
         });
     }, [lawyers, searchTerm, statusFilter]);
 
-    // Handle Verification Toggle
-    const handleStatusChange = (lawyerId, newStatus) => {
-        setLawyers((prev) =>
-            prev.map((l) => (l.id === lawyerId ? { ...l, status: newStatus } : l))
-        );
-        toast.success(`Lawyer status updated to "${newStatus}"`);
-        if (selectedLawyer && selectedLawyer.id === lawyerId) {
-            setSelectedLawyer((prev) => ({ ...prev, status: newStatus }));
+    const handleStatusChange = async (lawyerId, newStatus) => {
+        if (!lawyerId) {
+            toast.error("Lawyer ID missing.");
+            return;
+        }
+
+        try {
+            const isVerificationUpdate = typeof newStatus === "boolean";
+            const bodyPayload = isVerificationUpdate
+                ? { isVerified: newStatus }
+                : { status: newStatus };
+
+            // Replace http://localhost:5000 with your actual backend URL variable if available
+            const serverUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+            const response = await fetch(`${serverUrl}/api/lawyers/${lawyerId}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(bodyPayload),
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.message || `Server returned ${response.status}`);
+            }
+
+            // Update local state
+            setLawyers((prev) =>
+                prev.map((l) =>
+                    l._id === lawyerId || l.id === lawyerId || l.userId === lawyerId
+                        ? isVerificationUpdate
+                            ? { ...l, isVerified: newStatus }
+                            : { ...l, status: newStatus }
+                        : l
+                )
+            );
+
+            if (
+                selectedLawyer &&
+                (selectedLawyer._id === lawyerId || selectedLawyer.id === lawyerId || selectedLawyer.userId === lawyerId)
+            ) {
+                setSelectedLawyer((prev) =>
+                    prev
+                        ? isVerificationUpdate
+                            ? { ...prev, isVerified: newStatus }
+                            : { ...prev, status: newStatus }
+                        : null
+                );
+            }
+
+            toast.success("Updated successfully!");
+        } catch (err) {
+            console.error("Status Update Error:", err);
+            toast.error(err.message || "Update failed. Please try again.");
         }
     };
 
@@ -127,6 +174,7 @@ export default function AdminLawyersListing() {
                     </span>
                 );
             case "Pending Verification":
+            case "Pending Review":
                 return (
                     <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
                         <Clock size={12} /> Pending Review
@@ -139,7 +187,11 @@ export default function AdminLawyersListing() {
                     </span>
                 );
             default:
-                return null;
+                return (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-neutral-500/10 text-neutral-400 border border-neutral-500/20">
+                        {status || "Unknown"}
+                    </span>
+                );
         }
     };
 
@@ -160,6 +212,15 @@ export default function AdminLawyersListing() {
                         Manage legal professionals, review credentials, and approve verification requests.
                     </p>
                 </div>
+
+                <button
+                    onClick={handleRefresh}
+                    disabled={loading}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-neutral-900 border border-white/10 text-white text-xs font-bold hover:bg-neutral-800 transition disabled:opacity-50 cursor-pointer self-start md:self-auto"
+                >
+                    <RefreshCw size={14} className={loading ? "animate-spin text-amber-400" : ""} />
+                    <span>Refresh Data</span>
+                </button>
             </div>
 
             {/* Summary Metrics Cards */}
@@ -171,7 +232,7 @@ export default function AdminLawyersListing() {
                         </div>
                         <span className="text-[10px] font-bold text-neutral-400">Total Listed</span>
                     </div>
-                    <p className="text-xs text-neutral-400 font-medium font-sans">Total Lawyers</p>
+                    <p className="text-xs text-neutral-400 font-medium">Total Lawyers</p>
                     <h3 className="text-2xl font-black text-white">{lawyers.length}</h3>
                 </div>
 
@@ -182,7 +243,7 @@ export default function AdminLawyersListing() {
                         </div>
                         <span className="text-[10px] font-bold text-emerald-400">Approved</span>
                     </div>
-                    <p className="text-xs text-neutral-400 font-medium font-sans">Verified Practitioners</p>
+                    <p className="text-xs text-neutral-400 font-medium">Verified Practitioners</p>
                     <h3 className="text-2xl font-black text-white">
                         {lawyers.filter((l) => l.status === "Verified").length}
                     </h3>
@@ -195,9 +256,13 @@ export default function AdminLawyersListing() {
                         </div>
                         <span className="text-[10px] font-bold text-amber-400">Requires Action</span>
                     </div>
-                    <p className="text-xs text-neutral-400 font-medium font-sans">Pending Approvals</p>
+                    <p className="text-xs text-neutral-400 font-medium">Pending Approvals</p>
                     <h3 className="text-2xl font-black text-white">
-                        {lawyers.filter((l) => l.status === "Pending Verification").length}
+                        {
+                            lawyers.filter(
+                                (l) => l.status === "Pending Verification" || l.status === "Pending Review"
+                            ).length
+                        }
                     </h3>
                 </div>
 
@@ -208,7 +273,7 @@ export default function AdminLawyersListing() {
                         </div>
                         <span className="text-[10px] font-bold text-rose-400">Restricted</span>
                     </div>
-                    <p className="text-xs text-neutral-400 font-medium font-sans">Suspended Accounts</p>
+                    <p className="text-xs text-neutral-400 font-medium">Suspended Accounts</p>
                     <h3 className="text-2xl font-black text-white">
                         {lawyers.filter((l) => l.status === "Suspended").length}
                     </h3>
@@ -232,16 +297,16 @@ export default function AdminLawyersListing() {
                     <span className="text-xs text-neutral-500 flex items-center gap-1 mr-1">
                         <Filter size={13} /> Status:
                     </span>
-                    {["All", "Verified", "Pending Verification", "Suspended"].map((status) => (
+                    {["All", "Verified", "Pending Verification", "Suspended"].map((availabilityStatus) => (
                         <button
-                            key={status}
-                            onClick={() => setStatusFilter(status)}
-                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer whitespace-nowrap ${statusFilter === status
-                                    ? "bg-amber-500 text-neutral-950 shadow-md"
-                                    : "bg-neutral-950/60 text-neutral-400 hover:text-white hover:bg-neutral-800"
+                            key={availabilityStatus}
+                            onClick={() => setStatusFilter(availabilityStatus)}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer whitespace-nowrap ${statusFilter === availabilityStatus
+                                ? "bg-amber-500 text-neutral-950 shadow-md"
+                                : "bg-neutral-950/60 text-neutral-400 hover:text-white hover:bg-neutral-800"
                                 }`}
                         >
-                            {status}
+                            {availabilityStatus}
                         </button>
                     ))}
                 </div>
@@ -261,87 +326,121 @@ export default function AdminLawyersListing() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5 text-xs">
-                            {filteredLawyers.length === 0 ? (
+                            {loading ? (
+                                <tr>
+                                    <td colSpan={5} className="py-16 text-center text-neutral-400">
+                                        <div className="flex flex-col items-center justify-center gap-2">
+                                            <Loader2 size={24} className="animate-spin text-amber-400" />
+                                            <span>Fetching legal practitioners...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : error ? (
+                                <tr>
+                                    <td colSpan={5} className="py-12 text-center text-rose-400">
+                                        <div className="flex flex-col items-center justify-center gap-2">
+                                            <AlertCircle size={24} />
+                                            <span>{error}</span>
+                                            <button
+                                                onClick={handleRefresh}
+                                                className="mt-2 px-4 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition cursor-pointer"
+                                            >
+                                                Try Again
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : filteredLawyers.length === 0 ? (
                                 <tr>
                                     <td colSpan={5} className="py-12 text-center text-neutral-500">
                                         No lawyer profiles matching your criteria.
                                     </td>
                                 </tr>
                             ) : (
-                                filteredLawyers.map((lawyer) => (
-                                    <tr key={lawyer.id} className="hover:bg-white/[0.02] transition duration-200">
-                                        {/* Lawyer Profile */}
-                                        <td className="py-4 px-6">
-                                            <div className="flex items-center gap-3">
-                                                <img
-                                                    src={lawyer.avatar}
-                                                    alt={lawyer.name}
-                                                    className="w-11 h-11 rounded-2xl object-cover border border-white/10"
-                                                />
-                                                <div>
-                                                    <div className="text-white font-bold flex items-center gap-1.5">
-                                                        {lawyer.name}
-                                                        {lawyer.status === "Verified" && (
-                                                            <ShieldCheck size={14} className="text-amber-400" />
-                                                        )}
-                                                    </div>
-                                                    <div className="text-[10px] text-neutral-400 flex items-center gap-2 mt-0.5">
-                                                        <span>{lawyer.email}</span>
-                                                        <span>•</span>
-                                                        <span className="font-mono text-neutral-500">{lawyer.barNumber}</span>
+                                filteredLawyers.map((lawyer) => {
+                                    const keyId = lawyer.id || lawyer._id;
+                                    return (
+                                        <tr key={keyId} className="hover:bg-white/[0.02] transition duration-200">
+                                            {/* Lawyer Profile */}
+                                            <td className="py-4 px-6">
+                                                <div className="flex items-center gap-3">
+                                                    <Image
+                                                        src={lawyer.lawyerImage || lawyer.image || "https://i.pravatar.cc/150"}
+                                                        alt={lawyer.name || "Lawyer Profile"}
+                                                        width={44}
+                                                        height={44}
+                                                        className="w-11 h-11 rounded-2xl object-cover border border-white/10"
+                                                    />
+                                                    <div>
+                                                        <div className="text-white font-bold flex items-center gap-1.5">
+                                                            {lawyer.lawyerName}
+                                                            {lawyer.isVerified === true && (
+                                                                <ShieldCheck size={14} className="text-amber-400" />
+                                                            )}
+                                                        </div>
+                                                        <div className="text-[10px] text-neutral-400 flex items-center gap-2 mt-0.5">
+                                                            <span>{lawyer.userId}</span>
+                                                            {lawyer.barNumber && (
+                                                                <>
+                                                                    <span>•</span>
+                                                                    <span className="font-mono text-neutral-500">{lawyer.barNumber}</span>
+                                                                </>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </td>
+                                            </td>
 
-                                        {/* Specialization & Hourly Rate */}
-                                        <td className="py-4 px-6">
-                                            <div className="text-white font-medium">{lawyer.specialization}</div>
-                                            <div className="text-[11px] text-amber-400 font-bold mt-0.5">
-                                                ${lawyer.hourlyRate}/hr
-                                            </div>
-                                        </td>
+                                            {/* Specialization & Hourly Rate */}
+                                            <td className="py-4 px-6">
+                                                <div className="text-white font-medium">{lawyer.
+                                                    specialization || "N/A"}</div>
+                                                <div className="text-[11px] text-amber-400 font-bold mt-0.5">
+                                                    ${lawyer.hourlyRate || lawyer.rate || 0}/hr
+                                                </div>
+                                            </td>
 
-                                        {/* Rating & Reviews */}
-                                        <td className="py-4 px-6">
-                                            <div className="flex items-center gap-1 text-amber-400 font-bold">
-                                                <Star size={13} fill="currentColor" />
-                                                <span>{lawyer.rating}</span>
-                                                <span className="text-[10px] text-neutral-500 font-normal">
-                                                    ({lawyer.reviewsCount} reviews)
-                                                </span>
-                                            </div>
-                                            <div className="text-[10px] text-neutral-400 mt-0.5">
-                                                {lawyer.experience} Experience
-                                            </div>
-                                        </td>
+                                            {/* Rating & Reviews */}
+                                            <td className="py-4 px-6">
+                                                <div className="flex items-center gap-1 text-amber-400 font-bold">
+                                                    <Star size={13} fill="currentColor" />
+                                                    <span>{lawyer.averageRating || "4.5"}</span>
+                                                    <span className="text-[10px] text-neutral-500 font-normal">
+                                                        ({lawyer.totalReviews || 6} reviews)
+                                                    </span>
+                                                </div>
+                                                <div className="text-[10px] text-neutral-400 mt-0.5">
+                                                    {lawyer.yearsExperience || "N/A"} Yrs. Experience
+                                                </div>
+                                            </td>
 
-                                        {/* Status Badge */}
-                                        <td className="py-4 px-6">{getStatusBadge(lawyer.status)}</td>
+                                            {/* Status Badge */}
+                                            <td className="py-4 px-6">{getStatusBadge(lawyer.availabilityStatus)}</td>
 
-                                        {/* Actions */}
-                                        <td className="py-4 px-6 text-right">
-                                            <div className="flex items-center justify-end gap-2">
-                                                {lawyer.status === "Pending Verification" && (
+                                            {/* Actions */}
+                                            <td className="py-4 px-6 text-right">
+                                                <div className="flex items-center justify-end gap-2">
+                                                    {(lawyer.availabilityStatus === "Pending Verification" || lawyer.availabilityStatus === "Pending Review") && (
+                                                        <button
+                                                            onClick={() => handleStatusChange(keyId, "Verified")}
+                                                            className="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-[10px] uppercase tracking-wider transition cursor-pointer"
+                                                        >
+                                                            Approve
+                                                        </button>
+                                                    )}
+
                                                     <button
-                                                        onClick={() => handleStatusChange(lawyer.id, "Verified")}
-                                                        className="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-neutral-950 font-black text-[10px] uppercase tracking-wider transition cursor-pointer"
+                                                        onClick={() => setSelectedLawyer(lawyer)}
+                                                        className="p-2 rounded-xl bg-white/5 hover:bg-amber-500 hover:text-neutral-950 text-neutral-300 transition cursor-pointer"
+                                                        title="View Lawyer Details"
                                                     >
-                                                        Approve
+                                                        <Eye size={15} />
                                                     </button>
-                                                )}
-
-                                                <button
-                                                    onClick={() => setSelectedLawyer(lawyer)}
-                                                    className="p-2 rounded-xl bg-white/5 hover:bg-amber-500 hover:text-neutral-950 text-neutral-300 transition cursor-pointer"
-                                                    title="View Lawyer Details"
-                                                >
-                                                    <Eye size={15} />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
                             )}
                         </tbody>
                     </table>
@@ -349,6 +448,7 @@ export default function AdminLawyersListing() {
             </div>
 
             {/* Lawyer Profile Modal */}
+
             {selectedLawyer && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-950/80 backdrop-blur-md animate-fade-in">
                     <div className="bg-neutral-900 border border-white/10 rounded-3xl p-6 md:p-8 max-w-lg w-full shadow-2xl space-y-6 relative">
@@ -360,15 +460,17 @@ export default function AdminLawyersListing() {
                         </button>
 
                         <div className="flex items-center gap-4 border-b border-white/10 pb-5">
-                            <img
-                                src={selectedLawyer.avatar}
-                                alt={selectedLawyer.name}
+                            <Image
+                                src={selectedLawyer.lawyerImage || selectedLawyer.image || "https://i.pravatar.cc/150"}
+                                alt={selectedLawyer.name || "Lawyer"}
+                                width={64}
+                                height={64}
                                 className="w-16 h-16 rounded-2xl object-cover border border-amber-500/30"
                             />
                             <div>
-                                <h3 className="text-xl font-black text-white">{selectedLawyer.name}</h3>
+                                <h3 className="text-xl font-black text-white">{selectedLawyer.lawyerName}</h3>
                                 <p className="text-xs text-amber-400 font-semibold">{selectedLawyer.specialization}</p>
-                                <div className="mt-1">{getStatusBadge(selectedLawyer.status)}</div>
+                                <div className="mt-1">{getStatusBadge(selectedLawyer.availabilityStatus)}</div>
                             </div>
                         </div>
 
@@ -378,25 +480,25 @@ export default function AdminLawyersListing() {
                                     <span className="text-[10px] uppercase font-bold text-neutral-500 flex items-center gap-1">
                                         <Award size={12} /> Bar License ID
                                     </span>
-                                    <p className="font-mono font-bold text-white">{selectedLawyer.barNumber}</p>
+                                    <p className="font-mono font-bold text-white">{selectedLawyer.userId || "N/A"}</p>
                                 </div>
 
                                 <div className="p-3 rounded-2xl bg-neutral-950 border border-white/5 space-y-1">
                                     <span className="text-[10px] uppercase font-bold text-neutral-500 flex items-center gap-1">
                                         <Briefcase size={12} /> Experience
                                     </span>
-                                    <p className="font-bold text-white">{selectedLawyer.experience}</p>
+                                    <p className="font-bold text-white">{selectedLawyer.yearsExperience || "N/A"}</p>
                                 </div>
                             </div>
 
                             <div className="p-3.5 rounded-2xl bg-neutral-950 border border-white/5 space-y-2">
                                 <div className="flex items-center gap-2 text-neutral-300">
-                                    <Mail size={14} className="text-amber-400" />
-                                    <span>{selectedLawyer.email}</span>
+                                    <MdMyLocation size={14} className="text-amber-400" />
+                                    <span>{selectedLawyer.location}</span>
                                 </div>
                                 <div className="flex items-center gap-2 text-neutral-300">
                                     <Phone size={14} className="text-amber-400" />
-                                    <span>{selectedLawyer.phone}</span>
+                                    <span>{selectedLawyer.phone || "Not Provided"}</span>
                                 </div>
                             </div>
 
@@ -407,19 +509,25 @@ export default function AdminLawyersListing() {
                                 </label>
                                 <div className="flex gap-2 pt-1">
                                     <button
-                                        onClick={() => handleStatusChange(selectedLawyer.id, "Verified")}
-                                        className={`flex-1 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${selectedLawyer.status === "Verified"
-                                                ? "bg-emerald-500 text-neutral-950"
-                                                : "bg-neutral-950 text-neutral-300 hover:bg-neutral-800"
+                                        onClick={() => {
+                                            const targetId = selectedLawyer._id || selectedLawyer.id || selectedLawyer.userId;
+                                            handleStatusChange(targetId, !selectedLawyer.isVerified);
+                                        }}
+                                        className={`flex-1 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${selectedLawyer.isVerified
+                                            ? "bg-emerald-500 text-neutral-950"
+                                            : "bg-neutral-950 text-neutral-300 hover:bg-neutral-800"
                                             }`}
                                     >
-                                        Verify
+                                        {selectedLawyer.isVerified ? "Verified" : "Verify"}
                                     </button>
                                     <button
-                                        onClick={() => handleStatusChange(selectedLawyer.id, "Suspended")}
+                                        onClick={() => {
+                                            const targetId = selectedLawyer._id || selectedLawyer.id || selectedLawyer.userId;
+                                            handleStatusChange(targetId, "Suspended");
+                                        }}
                                         className={`flex-1 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${selectedLawyer.status === "Suspended"
-                                                ? "bg-rose-500 text-white"
-                                                : "bg-neutral-950 text-neutral-300 hover:bg-neutral-800"
+                                            ? "bg-rose-500 text-white"
+                                            : "bg-neutral-950 text-neutral-300 hover:bg-neutral-800"
                                             }`}
                                     >
                                         Suspend

@@ -294,7 +294,7 @@ export default function AdminManageUsers() {
                                         <td className="py-4 px-6">
                                             <div className="flex items-center gap-3">
                                                 <Image
-                                                    src={user.imageUrl || "https://i.pravatar.cc/150"}
+                                                    src={user.image || "https://i.pravatar.cc/150"}
                                                     alt={user.name || "User Avatar"}
                                                     width={40}
                                                     height={40}

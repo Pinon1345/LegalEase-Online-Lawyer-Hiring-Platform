@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useMemo, useState, useEffect, useCallback } from "react";
 import {
     CreditCard,
     Search,
@@ -15,86 +15,99 @@ import {
     User,
     Scale,
     FileSpreadsheet,
+    Loader2,
+    AlertTriangle,
 } from "lucide-react";
 import toast from "react-hot-toast";
-
-// Mock Transaction Data
-const INITIAL_TRANSACTIONS = [
-    {
-        id: "TXN-902418",
-        userEmail: "john.doe@example.com",
-        lawyerEmail: "sarah.j@legalease.com",
-        clientName: "John Doe",
-        lawyerName: "Adv. Sarah Jenkins",
-        service: "Corporate Legal Consultation",
-        amount: 150.0,
-        platformFee: 15.0,
-        status: "Completed",
-        paymentMethod: "Credit Card (Stripe)",
-        date: "2026-08-14 14:22",
-    },
-    {
-        id: "TXN-902419",
-        userEmail: "m.chang@example.com",
-        lawyerEmail: "tariq.r@legalease.com",
-        clientName: "Michael Chang",
-        lawyerName: "Adv. Tariq Rahman",
-        service: "Criminal Defense Review",
-        amount: 300.0,
-        platformFee: 30.0,
-        status: "Completed",
-        paymentMethod: "PayPal",
-        date: "2026-08-14 11:05",
-    },
-    {
-        id: "TXN-902420",
-        userEmail: "sophia.m@example.com",
-        lawyerEmail: "elena.r@legalease.com",
-        clientName: "Sophia Martinez",
-        lawyerName: "Adv. Elena Rostova",
-        service: "IP & Trademark Filing",
-        amount: 450.0,
-        platformFee: 45.0,
-        status: "Pending",
-        paymentMethod: "Bank Transfer",
-        date: "2026-08-13 18:40",
-    },
-    {
-        id: "TXN-902421",
-        userEmail: "d.miller@example.com",
-        lawyerEmail: "sarah.j@legalease.com",
-        clientName: "David Miller",
-        lawyerName: "Adv. Sarah Jenkins",
-        service: "Contract Drafting",
-        amount: 200.0,
-        platformFee: 20.0,
-        status: "Refunded",
-        paymentMethod: "Credit Card (Stripe)",
-        date: "2026-08-12 09:15",
-    },
-    {
-        id: "TXN-902422",
-        userEmail: "emma.w@example.com",
-        lawyerEmail: "tariq.r@legalease.com",
-        clientName: "Emma Watson",
-        lawyerName: "Adv. Tariq Rahman",
-        service: "Bail Hearing Consultation",
-        amount: 180.0,
-        platformFee: 18.0,
-        status: "Failed",
-        paymentMethod: "Credit Card (Stripe)",
-        date: "2026-08-11 16:50",
-    },
-];
+import { baseURL } from "@/lib/api/baseUrl";
 
 export default function AdminAllTransaction() {
     const [searchTerm, setSearchTerm] = useState("");
     const [statusFilter, setStatusFilter] = useState("All");
     const [selectedTxn, setSelectedTxn] = useState(null);
 
+    // Standard React state for data fetching
+    const [transactions, setTransactions] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isError, setIsError] = useState(false);
+
+    // Standalone function used for manual retries / refresh
+    const fetchTransactions = useCallback(async () => {
+        setIsLoading(true);
+        setIsError(false);
+        try {
+            const res = await fetch(`${baseURL}/api/transactions`);
+            if (!res.ok) {
+                throw new Error("Failed to fetch transactions");
+            }
+            const data = await res.json();
+            setTransactions(data);
+        } catch (error) {
+            console.error(error);
+            setIsError(true);
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
+    // Initial mount fetch handled cleanly without synchronous lint triggers
+    useEffect(() => {
+        let isMounted = true;
+
+        const loadInitialData = async () => {
+            try {
+                const res = await fetch(`${baseURL}/api/transactions`);
+                if (!res.ok) {
+                    throw new Error("Failed to fetch transactions");
+                }
+                const data = await res.json();
+                if (isMounted) {
+                    setTransactions(data);
+                }
+            } catch (error) {
+                console.error(error);
+                if (isMounted) {
+                    setIsError(true);
+                }
+            } finally {
+                if (isMounted) {
+                    setIsLoading(false);
+                }
+            }
+        };
+
+        loadInitialData();
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
+    // Normalized Data Array with Safe Fallbacks
+    const normalizedTransactions = useMemo(() => {
+        if (!Array.isArray(transactions)) return [];
+
+        return transactions.map((txn) => {
+            const dateVal = txn.date || txn.createdAt;
+            return {
+                id: txn.id || txn._id || "N/A",
+                userEmail: txn.userEmail || txn.clientEmail || "N/A",
+                lawyerEmail: txn.lawyerEmail || "N/A",
+                clientName: txn.clientName || txn.userName || "N/A",
+                lawyerName: txn.lawyerName || "N/A",
+                service: txn.service || txn.serviceName || "Consultation",
+                amount: Number(txn.amount) || 0,
+                platformFee: Number(txn.platformFee) || (Number(txn.amount) || 0) * 0.1,
+                status: txn.status || "Pending",
+                paymentMethod: txn.paymentMethod || "Stripe",
+                date: dateVal ? new Date(dateVal).toLocaleString() : "N/A",
+            };
+        });
+    }, [transactions]);
+
     // Filter Logic
     const filteredTransactions = useMemo(() => {
-        return INITIAL_TRANSACTIONS.filter((txn) => {
+        return normalizedTransactions.filter((txn) => {
             const matchesSearch =
                 txn.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 txn.userEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -103,29 +116,41 @@ export default function AdminAllTransaction() {
                 txn.lawyerName.toLowerCase().includes(searchTerm.toLowerCase());
 
             const matchesStatus =
-                statusFilter === "All" || txn.status === statusFilter;
+                statusFilter === "All" ||
+                txn.status.toLowerCase() === statusFilter.toLowerCase();
 
             return matchesSearch && matchesStatus;
         });
-    }, [searchTerm, statusFilter]);
+    }, [normalizedTransactions, searchTerm, statusFilter]);
 
-    // Aggregate Metrics
+    // Dynamic Aggregate Metrics
     const totalVolume = useMemo(() => {
-        return INITIAL_TRANSACTIONS.reduce(
+        return normalizedTransactions.reduce(
             (sum, item) => (item.status === "Completed" ? sum + item.amount : sum),
             0
         );
-    }, []);
+    }, [normalizedTransactions]);
 
     const totalPlatformFees = useMemo(() => {
-        return INITIAL_TRANSACTIONS.reduce(
+        return normalizedTransactions.reduce(
             (sum, item) => (item.status === "Completed" ? sum + item.platformFee : sum),
             0
         );
-    }, []);
+    }, [normalizedTransactions]);
+
+    const totalIssues = useMemo(() => {
+        return normalizedTransactions.filter(
+            (t) => t.status === "Refunded" || t.status === "Failed"
+        ).length;
+    }, [normalizedTransactions]);
 
     // CSV Export Handler
     const handleExportCSV = () => {
+        if (!filteredTransactions.length) {
+            toast.error("No transaction records available to export");
+            return;
+        }
+
         const headers = [
             "Transaction ID",
             "User Email",
@@ -141,7 +166,7 @@ export default function AdminAllTransaction() {
             `"${t.lawyerEmail}"`,
             t.amount,
             t.status,
-            t.date,
+            `"${t.date}"`,
         ]);
 
         const csvContent =
@@ -186,7 +211,11 @@ export default function AdminAllTransaction() {
                     </span>
                 );
             default:
-                return null;
+                return (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-neutral-500/10 text-neutral-400 border border-neutral-500/20">
+                        {status}
+                    </span>
+                );
         }
     };
 
@@ -216,7 +245,7 @@ export default function AdminAllTransaction() {
                 </button>
             </div>
 
-            {/* Summary Stat Cards */}
+            {/* Dynamic Summary Stat Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="p-5 rounded-3xl bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-2 shadow-xl">
                     <div className="flex items-center justify-between">
@@ -237,7 +266,7 @@ export default function AdminAllTransaction() {
                             <TrendingUp size={20} />
                         </div>
                         <span className="text-[10px] font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full">
-                            Platform Cut (10%)
+                            Platform Cut
                         </span>
                     </div>
                     <p className="text-xs text-neutral-400 font-medium">Net Commission</p>
@@ -252,7 +281,7 @@ export default function AdminAllTransaction() {
                         <span className="text-[10px] font-bold text-neutral-400">Total Records</span>
                     </div>
                     <p className="text-xs text-neutral-400 font-medium">Total Transactions</p>
-                    <h3 className="text-2xl font-black text-white">{INITIAL_TRANSACTIONS.length}</h3>
+                    <h3 className="text-2xl font-black text-white">{normalizedTransactions.length}</h3>
                 </div>
 
                 <div className="p-5 rounded-3xl bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-2 shadow-xl">
@@ -263,13 +292,12 @@ export default function AdminAllTransaction() {
                         <span className="text-[10px] font-bold text-rose-400">Issues</span>
                     </div>
                     <p className="text-xs text-neutral-400 font-medium">Refunded / Failed</p>
-                    <h3 className="text-2xl font-black text-white">2</h3>
+                    <h3 className="text-2xl font-black text-white">{totalIssues}</h3>
                 </div>
             </div>
 
             {/* Filter and Search Bar */}
             <div className="p-4 rounded-3xl bg-neutral-900/60 border border-white/10 backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl">
-                {/* Search */}
                 <div className="relative w-full md:w-96">
                     <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400" />
                     <input
@@ -281,7 +309,6 @@ export default function AdminAllTransaction() {
                     />
                 </div>
 
-                {/* Status Filter */}
                 <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-2 md:pb-0">
                     <span className="text-xs text-neutral-500 flex items-center gap-1 mr-1">
                         <Filter size={13} /> Status:
@@ -301,77 +328,89 @@ export default function AdminAllTransaction() {
                 </div>
             </div>
 
-            {/* Requirements-Compliant Transactions Table */}
+            {/* Transactions Table Section */}
             <div className="rounded-3xl border border-white/10 bg-neutral-900/50 backdrop-blur-xl overflow-hidden shadow-2xl">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="border-b border-white/10 bg-neutral-950/60 text-[11px] font-black uppercase tracking-wider text-neutral-400">
-                                <th className="py-4 px-6">Transaction ID</th>
-                                <th className="py-4 px-6">User Email</th>
-                                <th className="py-4 px-6">Lawyer Email</th>
-                                <th className="py-4 px-6">Amount</th>
-                                <th className="py-4 px-6">Date</th>
-                                <th className="py-4 px-6 text-right">Details</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-white/5 text-xs">
-                            {filteredTransactions.length === 0 ? (
-                                <tr>
-                                    <td colSpan={6} className="py-12 text-center text-neutral-500">
-                                        No transaction records matched your search parameters.
-                                    </td>
+                {isLoading ? (
+                    <div className="py-20 flex flex-col items-center justify-center gap-3 text-amber-400">
+                        <Loader2 className="animate-spin" size={32} />
+                        <span className="text-xs font-medium text-neutral-400">Fetching live transaction logs...</span>
+                    </div>
+                ) : isError ? (
+                    <div className="py-16 flex flex-col items-center justify-center gap-3 text-rose-400">
+                        <AlertTriangle size={32} />
+                        <span className="text-sm font-semibold">Failed to load transactions from API.</span>
+                        <button
+                            onClick={fetchTransactions}
+                            className="px-4 py-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs font-bold text-rose-400 hover:bg-rose-500/20 transition cursor-pointer"
+                        >
+                            Try Again
+                        </button>
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left border-collapse">
+                            <thead>
+                                <tr className="border-b border-white/10 bg-neutral-950/60 text-[11px] font-black uppercase tracking-wider text-neutral-400">
+                                    <th className="py-4 px-6">Transaction ID</th>
+                                    <th className="py-4 px-6">User Email</th>
+                                    <th className="py-4 px-6">Lawyer Tnx. ID</th>
+                                    <th className="py-4 px-6">Amount</th>
+                                    <th className="py-4 px-6">Date</th>
+                                    <th className="py-4 px-6 text-right">Details</th>
                                 </tr>
-                            ) : (
-                                filteredTransactions.map((txn) => (
-                                    <tr
-                                        key={txn.id}
-                                        className="hover:bg-white/[0.02] transition duration-200"
-                                    >
-                                        {/* Transaction ID */}
-                                        <td className="py-4 px-6 font-mono font-bold text-amber-400">
-                                            {txn.id}
-                                        </td>
-
-                                        {/* User Email */}
-                                        <td className="py-4 px-6">
-                                            <div className="text-white font-medium">{txn.userEmail}</div>
-                                            <div className="text-[10px] text-neutral-500">{txn.clientName}</div>
-                                        </td>
-
-                                        {/* Lawyer Email */}
-                                        <td className="py-4 px-6">
-                                            <div className="text-white font-medium">{txn.lawyerEmail}</div>
-                                            <div className="text-[10px] text-neutral-500">{txn.lawyerName}</div>
-                                        </td>
-
-                                        {/* Amount */}
-                                        <td className="py-4 px-6">
-                                            <div className="font-extrabold text-white">${txn.amount.toFixed(2)}</div>
-                                            <div className="mt-0.5">{getStatusBadge(txn.status)}</div>
-                                        </td>
-
-                                        {/* Date */}
-                                        <td className="py-4 px-6 text-neutral-400 font-mono text-[11px]">
-                                            {txn.date}
-                                        </td>
-
-                                        {/* Action */}
-                                        <td className="py-4 px-6 text-right">
-                                            <button
-                                                onClick={() => setSelectedTxn(txn)}
-                                                className="p-2 rounded-xl bg-white/5 hover:bg-amber-500 hover:text-neutral-950 text-neutral-300 transition cursor-pointer"
-                                                title="Inspect full transaction"
-                                            >
-                                                <Eye size={15} />
-                                            </button>
+                            </thead>
+                            <tbody className="divide-y divide-white/5 text-xs">
+                                {filteredTransactions.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={6} className="py-12 text-center text-neutral-500">
+                                            No transaction records matched your search parameters.
                                         </td>
                                     </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+                                ) : (
+                                    filteredTransactions.map((txn) => (
+                                        <tr
+                                            key={txn.id}
+                                            className="hover:bg-white/[0.02] transition duration-200"
+                                        >
+                                            <td className="py-4 px-6 font-mono font-bold text-amber-400">
+                                                {txn.id}
+                                            </td>
+
+                                            <td className="py-4 px-6">
+                                                <div className="text-white font-medium">{txn.userEmail}</div>
+                                                <div className="text-[10px] text-neutral-500">{txn.clientName}</div>
+                                            </td>
+
+                                            <td className="py-4 px-6">
+                                                <div className="text-white font-medium">{txn.lawyerEmail}</div>
+                                                <div className="text-[11px] text-emerald-600 dark:text-emerald-400 font-bold">{txn.lawyerName}</div>
+                                            </td>
+
+                                            <td className="py-4 px-6">
+                                                <div className="font-extrabold text-white">${txn.amount.toFixed(2)}</div>
+                                                <div className="mt-0.5">{getStatusBadge(txn.status)}</div>
+                                            </td>
+
+                                            <td className="py-4 px-6 text-neutral-400 font-mono text-[11px]">
+                                                {txn.date}
+                                            </td>
+
+                                            <td className="py-4 px-6 text-right">
+                                                <button
+                                                    onClick={() => setSelectedTxn(txn)}
+                                                    className="p-2 rounded-xl bg-white/5 hover:bg-amber-500 hover:text-neutral-950 text-neutral-300 transition cursor-pointer"
+                                                    title="Inspect full transaction"
+                                                >
+                                                    <Eye size={15} />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
             </div>
 
             {/* Detail Modal */}
