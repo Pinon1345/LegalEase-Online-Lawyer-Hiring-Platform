@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
     Users,
     Search,
@@ -8,108 +8,137 @@ import {
     Trash2,
     ShieldAlert,
     UserCheck,
-    UserX,
     Scale,
     ShieldCheck,
-    MoreVertical,
+    Loader2,
 } from "lucide-react";
 import toast from "react-hot-toast";
-
-// Initial Mock User Data
-const INITIAL_USERS = [
-    {
-        id: "USR-101",
-        name: "John Doe",
-        email: "john.doe@example.com",
-        role: "User",
-        joinedDate: "2026-01-15",
-        avatar: "https://i.pravatar.cc/150?u=john",
-    },
-    {
-        id: "USR-102",
-        name: "Adv. Sarah Jenkins",
-        email: "sarah.j@legalease.com",
-        role: "Lawyer",
-        joinedDate: "2025-11-20",
-        avatar: "https://i.pravatar.cc/150?u=sarah",
-    },
-    {
-        id: "USR-103",
-        name: "Alexander Pierce",
-        email: "admin.alex@legalease.com",
-        role: "Admin",
-        joinedDate: "2025-08-10",
-        avatar: "https://i.pravatar.cc/150?u=alex",
-    },
-    {
-        id: "USR-104",
-        name: "Adv. Tariq Rahman",
-        email: "tariq.r@legalease.com",
-        role: "Lawyer",
-        joinedDate: "2026-02-01",
-        avatar: "https://i.pravatar.cc/150?u=tariq",
-    },
-    {
-        id: "USR-105",
-        name: "Sophia Martinez",
-        email: "sophia.m@example.com",
-        role: "User",
-        joinedDate: "2026-03-05",
-        avatar: "https://i.pravatar.cc/150?u=sophia",
-    },
-];
+import Image from "next/image";
+import { baseURL } from "@/lib/api/baseUrl";
 
 export default function AdminManageUsers() {
-    const [users, setUsers] = useState(INITIAL_USERS);
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
-    const [roleFilter, setRoleFilter] = useState("All");
+    const [roleFilter, setRoleFilter] = useState("all");
     const [userToDelete, setUserToDelete] = useState(null);
 
-    // Filter Logic
+    // Initial mount data fetch (prevents synchronous state updates inside effect)
+    useEffect(() => {
+        let isMounted = true;
+
+        async function loadUsers() {
+            try {
+                const res = await fetch(`${baseURL}/api/users`);
+                if (!res.ok) throw new Error("Failed to fetch users");
+                const data = await res.json();
+                if (isMounted) setUsers(data);
+            } catch (error) {
+                if (isMounted) toast.error(error.message || "Failed to load users");
+            } finally {
+                if (isMounted) setLoading(false);
+            }
+        }
+
+        loadUsers();
+
+        return () => {
+            isMounted = false;
+        };
+    }, []);
+
+    // Manual refetch helper for user actions (updates loading state explicitly)
+    const refetchUsers = useCallback(async () => {
+        setLoading(true);
+        try {
+            const res = await fetch(`${baseURL}/api/users`);
+            if (!res.ok) throw new Error("Failed to fetch users");
+            const data = await res.json();
+            setUsers(data);
+        } catch (error) {
+            toast.error(error.message || "Failed to load users");
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    // Filter Logic matching DB field casing ('user', 'lawyer', 'admin')
     const filteredUsers = useMemo(() => {
         return users.filter((user) => {
             const matchesSearch =
-                user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                user.email.toLowerCase().includes(searchTerm.toLowerCase());
+                user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                user.email?.toLowerCase().includes(searchTerm.toLowerCase());
 
-            const matchesRole = roleFilter === "All" || user.role === roleFilter;
+            const userRole = user.role?.toLowerCase() || "user";
+            const matchesRole =
+                roleFilter === "all" || userRole === roleFilter.toLowerCase();
 
             return matchesSearch && matchesRole;
         });
     }, [users, searchTerm, roleFilter]);
 
-    // Handle Role Change
-    const handleRoleChange = (userId, newRole) => {
-        setUsers((prevUsers) =>
-            prevUsers.map((u) => (u.id === userId ? { ...u, role: newRole } : u))
-        );
-        toast.success(`User role successfully updated to ${newRole}`);
+    // Handle Dynamic Role Change in Database
+    const handleRoleChange = async (userId, newRole) => {
+        try {
+            const res = await fetch(`${baseURL}/api/users/${userId}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ role: newRole.toLowerCase() }),
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.message || "Failed to update user role");
+            }
+
+            setUsers((prevUsers) =>
+                prevUsers.map((u) =>
+                    u._id === userId ? { ...u, role: newRole.toLowerCase() } : u
+                )
+            );
+            toast.success(`User role updated to ${newRole}`);
+        } catch (error) {
+            toast.error(error.message || "Failed to update role");
+        }
     };
 
-    // Handle Delete Confirmation
-    const confirmDeleteUser = () => {
+    // Handle Dynamic Delete Confirmation in Database
+    const confirmDeleteUser = async () => {
         if (!userToDelete) return;
 
-        setUsers((prevUsers) => prevUsers.filter((u) => u.id !== userToDelete.id));
-        toast.success(`User "${userToDelete.name}" has been removed.`);
-        setUserToDelete(null);
+        try {
+            const res = await fetch(`${baseURL}/api/users/${userToDelete._id}`, {
+                method: "DELETE",
+            });
+
+            if (!res.ok) throw new Error("Failed to delete user");
+
+            setUsers((prevUsers) =>
+                prevUsers.filter((u) => u._id !== userToDelete._id)
+            );
+            toast.success(`User "${userToDelete.name}" has been removed.`);
+            setUserToDelete(null);
+        } catch (error) {
+            toast.error(error.message || "Failed to delete user");
+        }
     };
 
     const getRoleBadge = (role) => {
-        switch (role) {
-            case "Admin":
+        const normalizedRole = role?.toLowerCase();
+        switch (normalizedRole) {
+            case "admin":
                 return (
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-purple-500/10 text-purple-400 border border-purple-500/20">
                         <ShieldCheck size={13} /> Admin
                     </span>
                 );
-            case "Lawyer":
+            case "lawyer":
                 return (
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
                         <Scale size={13} /> Lawyer
                     </span>
                 );
-            case "User":
+            case "user":
             default:
                 return (
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">
@@ -158,7 +187,7 @@ export default function AdminManageUsers() {
                     </div>
                     <p className="text-xs text-neutral-400 font-medium">Standard Users</p>
                     <h3 className="text-2xl font-black text-white">
-                        {users.filter((u) => u.role === "User").length}
+                        {users.filter((u) => u.role?.toLowerCase() === "user").length}
                     </h3>
                 </div>
 
@@ -171,7 +200,7 @@ export default function AdminManageUsers() {
                     </div>
                     <p className="text-xs text-neutral-400 font-medium">Lawyer Accounts</p>
                     <h3 className="text-2xl font-black text-white">
-                        {users.filter((u) => u.role === "Lawyer").length}
+                        {users.filter((u) => u.role?.toLowerCase() === "lawyer").length}
                     </h3>
                 </div>
 
@@ -184,7 +213,7 @@ export default function AdminManageUsers() {
                     </div>
                     <p className="text-xs text-neutral-400 font-medium">Administrators</p>
                     <h3 className="text-2xl font-black text-white">
-                        {users.filter((u) => u.role === "Admin").length}
+                        {users.filter((u) => u.role?.toLowerCase() === "admin").length}
                     </h3>
                 </div>
             </div>
@@ -214,10 +243,10 @@ export default function AdminManageUsers() {
                     {["All", "User", "Lawyer", "Admin"].map((role) => (
                         <button
                             key={role}
-                            onClick={() => setRoleFilter(role)}
-                            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer whitespace-nowrap ${roleFilter === role
-                                    ? "bg-amber-500 text-neutral-950 shadow-md"
-                                    : "bg-neutral-950/60 text-neutral-400 hover:text-white hover:bg-neutral-800"
+                            onClick={() => setRoleFilter(role.toLowerCase())}
+                            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer whitespace-nowrap ${roleFilter === role.toLowerCase()
+                                ? "bg-amber-500 text-neutral-950 shadow-md"
+                                : "bg-neutral-950/60 text-neutral-400 hover:text-white hover:bg-neutral-800"
                                 }`}
                         >
                             {role}
@@ -240,7 +269,16 @@ export default function AdminManageUsers() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5 text-xs">
-                            {filteredUsers.length === 0 ? (
+                            {loading ? (
+                                <tr>
+                                    <td colSpan={5} className="py-12 text-center text-neutral-400">
+                                        <div className="flex items-center justify-center gap-2">
+                                            <Loader2 size={18} className="animate-spin text-amber-400" />
+                                            <span>Loading users...</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : filteredUsers.length === 0 ? (
                                 <tr>
                                     <td colSpan={5} className="py-12 text-center text-neutral-500">
                                         No users matching your search criteria.
@@ -249,21 +287,23 @@ export default function AdminManageUsers() {
                             ) : (
                                 filteredUsers.map((user) => (
                                     <tr
-                                        key={user.id}
+                                        key={user._id}
                                         className="hover:bg-white/[0.02] transition duration-200"
                                     >
                                         {/* User Name & Avatar */}
                                         <td className="py-4 px-6">
                                             <div className="flex items-center gap-3">
-                                                <img
-                                                    src={user.avatar}
-                                                    alt={user.name}
+                                                <Image
+                                                    src={user.imageUrl || "https://i.pravatar.cc/150"}
+                                                    alt={user.name || "User Avatar"}
+                                                    width={40}
+                                                    height={40}
                                                     className="w-10 h-10 rounded-2xl object-cover border border-white/10"
                                                 />
                                                 <div>
                                                     <div className="text-white font-bold">{user.name}</div>
                                                     <div className="text-[10px] font-mono text-neutral-500">
-                                                        {user.id}
+                                                        {user._id}
                                                     </div>
                                                 </div>
                                             </div>
@@ -280,13 +320,13 @@ export default function AdminManageUsers() {
                                         {/* Change Role Selection */}
                                         <td className="py-4 px-6">
                                             <select
-                                                value={user.role}
-                                                onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                                                className="bg-neutral-950 border border-white/10 text-neutral-300 text-xs rounded-xl px-3 py-1.5 focus:outline-none focus:border-amber-500/50 cursor-pointer hover:border-white/20 transition"
+                                                value={user.role?.toLowerCase() || "user"}
+                                                onChange={(e) => handleRoleChange(user._id, e.target.value)}
+                                                className="bg-neutral-950 border border-white/10 text-neutral-300 text-xs rounded-xl px-3 py-1.5 focus:outline-none focus:border-amber-500/50 cursor-pointer hover:border-white/20 transition capitalize"
                                             >
-                                                <option value="User">User</option>
-                                                <option value="Lawyer">Lawyer</option>
-                                                <option value="Admin">Admin</option>
+                                                <option value="user">User</option>
+                                                <option value="lawyer">Lawyer</option>
+                                                <option value="admin">Admin</option>
                                             </select>
                                         </td>
 
@@ -324,9 +364,9 @@ export default function AdminManageUsers() {
 
                         <p className="text-xs text-neutral-300 leading-relaxed">
                             Are you sure you want to permanently delete{" "}
-                            <span className="font-bold text-white">{userToDelete.name}</span> (
+                            <span className="font-bold text-emerald-400 text-sm">{userToDelete.name}</span> (
                             <span className="font-mono text-amber-400">{userToDelete.email}</span>
-                            )? All associated permissions and data will be removed.
+                            ) ? All associated permissions and data will be removed.
                         </p>
 
                         <div className="flex items-center gap-3 pt-2">
