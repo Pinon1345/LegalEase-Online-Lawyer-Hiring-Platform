@@ -128,9 +128,9 @@ export default function AdminLawyersListing() {
                 ? { isVerified: newStatus }
                 : { availabilityStatus: newStatus };
 
-            const serverUrl = process.env.NEXT_PUBLIC_API_URL || baseURL || "http://localhost:5000";
+            // const serverUrl = process.env.NEXT_PUBLIC_API_URL || baseURL || "http://localhost:5000";
 
-            const response = await fetch(`${serverUrl}/api/lawyers/${lawyerId}`, {
+            const response = await fetch(`${baseURL}/api/lawyers/${lawyerId}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(bodyPayload),
@@ -213,7 +213,7 @@ export default function AdminLawyersListing() {
                             Legal Practitioner Directory
                         </span>
                     </div>
-                    <h1 className="text-3xl font-black text-white mt-2">
+                    <h1 className="text-3xl font-black text-gray-800 dark:text-white mt-2">
                         Lawyer Listings & Verification
                     </h1>
                     <p className="text-xs text-neutral-400">
@@ -224,7 +224,7 @@ export default function AdminLawyersListing() {
                 <button
                     onClick={handleRefresh}
                     disabled={loading}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-neutral-900 border border-white/10 text-white text-xs font-bold hover:bg-neutral-800 transition disabled:opacity-50 cursor-pointer self-start md:self-auto"
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-200 dark:bg-neutral-900 border border-white/10 text-gray-600 dark:text-white text-xs font-bold hover:bg-neutral-200 dark:hover:bg-neutral-800 transition disabled:opacity-50 cursor-pointer self-start md:self-auto"
                 >
                     <RefreshCw size={14} className={loading ? "animate-spin text-amber-400" : ""} />
                     <span>Refresh Data</span>
@@ -233,7 +233,7 @@ export default function AdminLawyersListing() {
 
             {/* Summary Metrics Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="p-5 rounded-3xl bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-2 shadow-xl">
+                <div className="p-5 rounded-3xl bg-slate-100 dark:bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-2 shadow-xl">
                     <div className="flex items-center justify-between">
                         <div className="p-2.5 rounded-2xl bg-amber-500/10 text-amber-400">
                             <Scale size={20} />
@@ -241,10 +241,10 @@ export default function AdminLawyersListing() {
                         <span className="text-[10px] font-bold text-neutral-400">Total Listed</span>
                     </div>
                     <p className="text-xs text-neutral-400 font-medium">Total Lawyers</p>
-                    <h3 className="text-2xl font-black text-white">{Array.isArray(lawyers) ? lawyers.length : 0}</h3>
+                    <h3 className="text-2xl font-black text-gray-700 dark:text-white">{Array.isArray(lawyers) ? lawyers.length : 0}</h3>
                 </div>
 
-                <div className="p-5 rounded-3xl bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-2 shadow-xl">
+                <div className="p-5 rounded-3xl bg-slate-100 dark:bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-2 shadow-xl">
                     <div className="flex items-center justify-between">
                         <div className="p-2.5 rounded-2xl bg-emerald-500/10 text-emerald-400">
                             <CheckCircle2 size={20} />
@@ -252,12 +252,12 @@ export default function AdminLawyersListing() {
                         <span className="text-[10px] font-bold text-emerald-400">Approved</span>
                     </div>
                     <p className="text-xs text-neutral-400 font-medium">Verified Practitioners</p>
-                    <h3 className="text-2xl font-black text-white">
+                    <h3 className="text-2xl font-black text-gray-700 dark:text-white">
                         {Array.isArray(lawyers) ? lawyers.filter((l) => l.availabilityStatus === "Verified" || l.isVerified === true).length : 0}
                     </h3>
                 </div>
 
-                <div className="p-5 rounded-3xl bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-2 shadow-xl">
+                <div className="p-5 rounded-3xl bg-slate-100 dark:bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-2 shadow-xl">
                     <div className="flex items-center justify-between">
                         <div className="p-2.5 rounded-2xl bg-amber-500/10 text-amber-400">
                             <Clock size={20} />
@@ -265,7 +265,7 @@ export default function AdminLawyersListing() {
                         <span className="text-[10px] font-bold text-amber-400">Requires Action</span>
                     </div>
                     <p className="text-xs text-neutral-400 font-medium">Pending Approvals</p>
-                    <h3 className="text-2xl font-black text-white">
+                    <h3 className="text-2xl font-black text-gray-700 dark:text-white">
                         {
                             Array.isArray(lawyers) ? lawyers.filter(
                                 (l) => l.availabilityStatus === "Pending Verification" || l.availabilityStatus === "Pending Review"
@@ -274,7 +274,7 @@ export default function AdminLawyersListing() {
                     </h3>
                 </div>
 
-                <div className="p-5 rounded-3xl bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-2 shadow-xl">
+                <div className="p-5 rounded-3xl bg-slate-100 dark:bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-2 shadow-xl">
                     <div className="flex items-center justify-between">
                         <div className="p-2.5 rounded-2xl bg-rose-500/10 text-rose-400">
                             <XCircle size={20} />
@@ -282,14 +282,14 @@ export default function AdminLawyersListing() {
                         <span className="text-[10px] font-bold text-rose-400">Restricted</span>
                     </div>
                     <p className="text-xs text-neutral-400 font-medium">Suspended Accounts</p>
-                    <h3 className="text-2xl font-black text-white">
+                    <h3 className="text-2xl font-black text-gray-700 dark:text-white">
                         {Array.isArray(lawyers) ? lawyers.filter((l) => l.availabilityStatus === "Suspended").length : 0}
                     </h3>
                 </div>
             </div>
 
             {/* Filter and Search Bar */}
-            <div className="p-4 rounded-3xl bg-neutral-900/60 border border-white/10 backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl">
+            <div className="p-4 rounded-3xl bg-slate-100 dark:bg-neutral-900/60 border border-white/10 backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl">
                 <div className="relative w-full md:w-96">
                     <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400" />
                     <input
@@ -297,12 +297,12 @@ export default function AdminLawyersListing() {
                         placeholder="Search by name, specialization, or bar number..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-neutral-950/80 border border-white/10 text-white text-xs placeholder:text-neutral-500 focus:outline-none focus:border-amber-500/50 transition"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-slate-200 dark:bg-neutral-950/80 border border-white/10 text-gray-600 dark:text-white text-xs placeholder:text-neutral-500 focus:outline-none focus:border-amber-500/50 transition"
                     />
                 </div>
 
                 <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto pb-2 md:pb-0">
-                    <span className="text-xs text-neutral-500 flex items-center gap-1 mr-1">
+                    <span className="text-xs text-neutral-700 dark:text-neutral-500 flex items-center gap-1 mr-1">
                         <Filter size={13} /> Status:
                     </span>
                     {["All", "Verified", "Pending Verification", "Suspended"].map((availabilityStatus) => (
@@ -311,7 +311,7 @@ export default function AdminLawyersListing() {
                             onClick={() => setStatusFilter(availabilityStatus)}
                             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer whitespace-nowrap ${statusFilter === availabilityStatus
                                 ? "bg-amber-500 text-neutral-950 shadow-md"
-                                : "bg-neutral-950/60 text-neutral-400 hover:text-white hover:bg-neutral-800"
+                                : "bg-slate-200 dark:bg-neutral-950/60 text-neutral-600 dark:text-neutral-400 hover:text-white hover:bg-neutral-800"
                                 }`}
                         >
                             {availabilityStatus}
@@ -321,11 +321,11 @@ export default function AdminLawyersListing() {
             </div>
 
             {/* Main Table */}
-            <div className="rounded-3xl border border-white/10 bg-neutral-900/50 backdrop-blur-xl overflow-hidden shadow-2xl">
+            <div className="rounded-3xl border border-white/10 bg-slate-100 dark:bg-neutral-900/50 backdrop-blur-xl overflow-hidden shadow-2xl">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="border-b border-white/10 bg-neutral-950/60 text-[11px] font-black uppercase tracking-wider text-neutral-400">
+                            <tr className="border-b border-white/10 bg-slate-200 dark:bg-neutral-950/60 text-[12px] border-b-amber-400 dark:border-b-amber-600 font-black uppercase tracking-wider text-neutral-400 dark:text-neutral-800">
                                 <th className="py-4 px-6">Lawyer Details</th>
                                 <th className="py-4 px-6">Specialization & Rate</th>
                                 <th className="py-4 px-6">Rating & Stats</th>
@@ -351,7 +351,7 @@ export default function AdminLawyersListing() {
                                             <span>{error}</span>
                                             <button
                                                 onClick={handleRefresh}
-                                                className="mt-2 px-4 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition cursor-pointer"
+                                                className="mt-2 px-4 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-gray-600 dark:text-white text-xs font-bold transition cursor-pointer"
                                             >
                                                 Try Again
                                             </button>
@@ -380,7 +380,7 @@ export default function AdminLawyersListing() {
                                                         className="w-11 h-11 rounded-2xl object-cover border border-white/10"
                                                     />
                                                     <div>
-                                                        <div className="text-white font-bold flex items-center gap-1.5">
+                                                        <div className="text-gray-800 dark:text-white font-bold flex items-center gap-1.5">
                                                             {lawyer.lawyerName}
                                                             {lawyer.isVerified === true && (
                                                                 <ShieldCheck size={14} className="text-amber-400" />
@@ -401,7 +401,7 @@ export default function AdminLawyersListing() {
 
                                             {/* Specialization & Hourly Rate */}
                                             <td className="py-4 px-6">
-                                                <div className="text-white font-medium">{lawyer.specialization || "N/A"}</div>
+                                                <div className="text-gray-800 dark:text-white font-medium">{lawyer.specialization || "N/A"}</div>
                                                 <div className="text-[11px] text-amber-400 font-bold mt-0.5">
                                                     ${lawyer.hourlyRate || lawyer.rate || 0}/hr
                                                 </div>
@@ -438,7 +438,7 @@ export default function AdminLawyersListing() {
 
                                                     <button
                                                         onClick={() => setSelectedLawyer(lawyer)}
-                                                        className="p-2 rounded-xl bg-white/5 hover:bg-amber-500 hover:text-neutral-950 text-neutral-300 transition cursor-pointer"
+                                                        className="p-2 rounded-xl bg-white/5 hover:bg-amber-500 hover:text-neutral-950 text-neutral-400 dark:text-neutral-300 transition cursor-pointer"
                                                         title="View Lawyer Details"
                                                     >
                                                         <Eye size={15} />

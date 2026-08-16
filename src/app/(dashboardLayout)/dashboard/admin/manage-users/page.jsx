@@ -158,8 +158,8 @@ export default function AdminManageUsers() {
                             User Management
                         </span>
                     </div>
-                    <h1 className="text-3xl font-black text-white mt-2">Manage Users</h1>
-                    <p className="text-xs text-neutral-400">
+                    <h1 className="text-3xl font-black text-gray-800 dark:text-white mt-2">Manage Users</h1>
+                    <p className="text-xs text-neutral-600 dark:text-neutral-400">
                         Control user access, assign system roles, and manage account privileges.
                     </p>
                 </div>
@@ -167,7 +167,7 @@ export default function AdminManageUsers() {
 
             {/* Metrics Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="p-5 rounded-3xl bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-2 shadow-xl">
+                <div className="p-5 rounded-3xl bg-slate-100 dark:bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-2 shadow-xl">
                     <div className="flex items-center justify-between">
                         <div className="p-2.5 rounded-2xl bg-amber-500/10 text-amber-400">
                             <Users size={20} />
@@ -175,10 +175,10 @@ export default function AdminManageUsers() {
                         <span className="text-[10px] font-bold text-neutral-400">Total Accounts</span>
                     </div>
                     <p className="text-xs text-neutral-400 font-medium">Total Registered</p>
-                    <h3 className="text-2xl font-black text-white">{users.length}</h3>
+                    <h3 className="text-2xl font-black text-gray-500 dark:text-white">{users.length}</h3>
                 </div>
 
-                <div className="p-5 rounded-3xl bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-2 shadow-xl">
+                <div className="p-5 rounded-3xl bg-slate-100 dark:bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-2 shadow-xl">
                     <div className="flex items-center justify-between">
                         <div className="p-2.5 rounded-2xl bg-blue-500/10 text-blue-400">
                             <UserCheck size={20} />
@@ -186,12 +186,12 @@ export default function AdminManageUsers() {
                         <span className="text-[10px] font-bold text-blue-400">Clients</span>
                     </div>
                     <p className="text-xs text-neutral-400 font-medium">Standard Users</p>
-                    <h3 className="text-2xl font-black text-white">
+                    <h3 className="text-2xl font-black text-gray-500 dark:text-white">
                         {users.filter((u) => u.role?.toLowerCase() === "user").length}
                     </h3>
                 </div>
 
-                <div className="p-5 rounded-3xl bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-2 shadow-xl">
+                <div className="p-5 rounded-3xl bg-slate-100 dark:bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-2 shadow-xl">
                     <div className="flex items-center justify-between">
                         <div className="p-2.5 rounded-2xl bg-amber-500/10 text-amber-400">
                             <Scale size={20} />
@@ -199,12 +199,12 @@ export default function AdminManageUsers() {
                         <span className="text-[10px] font-bold text-amber-400">Legal Pros</span>
                     </div>
                     <p className="text-xs text-neutral-400 font-medium">Lawyer Accounts</p>
-                    <h3 className="text-2xl font-black text-white">
+                    <h3 className="text-2xl font-black text-gray-500 dark:text-white">
                         {users.filter((u) => u.role?.toLowerCase() === "lawyer").length}
                     </h3>
                 </div>
 
-                <div className="p-5 rounded-3xl bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-2 shadow-xl">
+                <div className="p-5 rounded-3xl bg-slate-100 dark:bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-2 shadow-xl">
                     <div className="flex items-center justify-between">
                         <div className="p-2.5 rounded-2xl bg-purple-500/10 text-purple-400">
                             <ShieldCheck size={20} />
@@ -212,14 +212,14 @@ export default function AdminManageUsers() {
                         <span className="text-[10px] font-bold text-purple-400">System Admin</span>
                     </div>
                     <p className="text-xs text-neutral-400 font-medium">Administrators</p>
-                    <h3 className="text-2xl font-black text-white">
+                    <h3 className="text-2xl font-black text-gray-500 dark:text-white">
                         {users.filter((u) => u.role?.toLowerCase() === "admin").length}
                     </h3>
                 </div>
             </div>
 
             {/* Filter and Search Bar */}
-            <div className="p-4 rounded-3xl bg-neutral-900/60 border border-white/10 backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl">
+            <div className="p-4 rounded-3xl bg-slate-100 dark:bg-neutral-900/60 border border-white/10 backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl">
                 {/* Search Input */}
                 <div className="relative w-full md:w-96">
                     <Search
@@ -231,7 +231,7 @@ export default function AdminManageUsers() {
                         placeholder="Search by name or email..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-neutral-950/80 border border-white/10 text-white text-xs placeholder:text-neutral-500 focus:outline-none focus:border-amber-500/50 transition"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-slate-200 dark:bg-neutral-950/80 border border-white/10 text-white text-xs placeholder:text-neutral-500 focus:outline-none focus:border-amber-500/50 transition"
                     />
                 </div>
 
@@ -246,7 +246,7 @@ export default function AdminManageUsers() {
                             onClick={() => setRoleFilter(role.toLowerCase())}
                             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer whitespace-nowrap ${roleFilter === role.toLowerCase()
                                 ? "bg-amber-500 text-neutral-950 shadow-md"
-                                : "bg-neutral-950/60 text-neutral-400 hover:text-white hover:bg-neutral-800"
+                                : "bg-slate-200 dark:bg-neutral-950/60 text-neutral-600 dark:text-neutral-400 hover:text-white hover:bg-neutral-800"
                                 }`}
                         >
                             {role}
@@ -256,11 +256,11 @@ export default function AdminManageUsers() {
             </div>
 
             {/* Main Users Table */}
-            <div className="rounded-3xl border border-white/10 bg-neutral-900/50 backdrop-blur-xl overflow-hidden shadow-2xl">
+            <div className="rounded-3xl border border-white/10 bg-slate-100 dark:bg-neutral-900/50 backdrop-blur-xl overflow-hidden shadow-2xl">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="border-b border-white/10 bg-neutral-950/60 text-[11px] font-black uppercase tracking-wider text-neutral-400">
+                            <tr className="border-b border-white/10 bg-slate-200 dark:bg-neutral-950/60 text-[12px] font-black uppercase tracking-wider text-neutral-600 dark:text-neutral-400 border-b-amber-400 dark:border-b-amber-600">
                                 <th className="py-4 px-6">User / Name</th>
                                 <th className="py-4 px-6">Email Address</th>
                                 <th className="py-4 px-6">Current Role</th>
@@ -271,7 +271,7 @@ export default function AdminManageUsers() {
                         <tbody className="divide-y divide-white/5 text-xs">
                             {loading ? (
                                 <tr>
-                                    <td colSpan={5} className="py-12 text-center text-neutral-400">
+                                    <td colSpan={5} className="py-12 text-center text-neutral-600 dark:text-neutral-400">
                                         <div className="flex items-center justify-center gap-2">
                                             <Loader2 size={18} className="animate-spin text-amber-400" />
                                             <span>Loading users...</span>
@@ -301,7 +301,7 @@ export default function AdminManageUsers() {
                                                     className="w-10 h-10 rounded-2xl object-cover border border-white/10"
                                                 />
                                                 <div>
-                                                    <div className="text-white font-bold">{user.name}</div>
+                                                    <div className="text-gray-800 dark:text-white font-bold">{user.name}</div>
                                                     <div className="text-[10px] font-mono text-neutral-500">
                                                         {user._id}
                                                     </div>
@@ -310,7 +310,7 @@ export default function AdminManageUsers() {
                                         </td>
 
                                         {/* Email */}
-                                        <td className="py-4 px-6 font-mono text-neutral-300">
+                                        <td className="py-4 px-6 font-mono text-neutral-600 dark:text-neutral-300">
                                             {user.email}
                                         </td>
 
@@ -322,7 +322,7 @@ export default function AdminManageUsers() {
                                             <select
                                                 value={user.role?.toLowerCase() || "user"}
                                                 onChange={(e) => handleRoleChange(user._id, e.target.value)}
-                                                className="bg-neutral-950 border border-white/10 text-neutral-300 text-xs rounded-xl px-3 py-1.5 focus:outline-none focus:border-amber-500/50 cursor-pointer hover:border-white/20 transition capitalize"
+                                                className="bg-slate-200 dark:bg-neutral-950 border border-white/10 text-neutral-500 dark:text-neutral-300 text-xs rounded-xl px-3 py-1.5 focus:outline-none focus:border-amber-500/50 cursor-pointer hover:border-white/20 transition capitalize"
                                             >
                                                 <option value="user">User</option>
                                                 <option value="lawyer">Lawyer</option>

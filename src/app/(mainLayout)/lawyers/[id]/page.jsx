@@ -110,7 +110,7 @@ export default async function LawyerDetailsPage({ params }) {
 
                                 {/* Quick Highlights Badge Bar */}
                                 <div className="grid grid-cols-2 gap-3 pt-2 text-xs">
-                                    <div className="p-3 rounded-2xl bg-neutral-900/40 border border-border/80 flex items-center gap-2">
+                                    <div className="p-3 rounded-2xl bg-slate-100 dark:bg-neutral-900/40 border border-border/80 flex items-center gap-2">
                                         <Briefcase size={16} className="text-secondary shrink-0" />
                                         <div>
                                             <span className="text-text-secondary block text-[10px]">Experience</span>
@@ -118,7 +118,7 @@ export default async function LawyerDetailsPage({ params }) {
                                         </div>
                                     </div>
 
-                                    <div className="p-3 rounded-2xl bg-neutral-900/40 border border-border/80 flex items-center gap-2">
+                                    <div className="p-3 rounded-2xl bg-slate-100 dark:bg-neutral-900/40 border border-border/80 flex items-center gap-2">
                                         <Star size={16} className="text-amber-400 fill-amber-400 shrink-0" />
                                         <div>
                                             <span className="text-text-secondary block text-[10px]">Rating</span>
@@ -126,7 +126,7 @@ export default async function LawyerDetailsPage({ params }) {
                                         </div>
                                     </div>
 
-                                    <div className="p-3 rounded-2xl bg-neutral-900/40 border border-border/80 flex items-center gap-2">
+                                    <div className="p-3 rounded-2xl bg-slate-100 dark:bg-neutral-900/40 border border-border/80 flex items-center gap-2">
                                         <MapPin size={16} className="text-secondary shrink-0" />
                                         <div className="truncate">
                                             <span className="text-text-secondary block text-[10px]">Location</span>
@@ -134,7 +134,7 @@ export default async function LawyerDetailsPage({ params }) {
                                         </div>
                                     </div>
 
-                                    <div className="p-3 rounded-2xl bg-neutral-900/40 border border-border/80 flex items-center gap-2">
+                                    <div className="p-3 rounded-2xl bg-slate-100 dark:bg-neutral-900/40 border border-border/80 flex items-center gap-2">
                                         <Calendar size={16} className="text-secondary shrink-0" />
                                         <div>
                                             <span className="text-text-secondary block text-[10px]">Joined</span>

@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "LegalEase | Home Page",
+  title: "LegalEase",
   description: "LegalEase is a modern online lawyer hiring platform that connects clients with verified lawyers for legal consultation and services. Browse lawyer profiles, book appointments, manage cases, and access trusted legal support through a secure and user-friendly platform.",
   keywords: [
     "LegalEase",

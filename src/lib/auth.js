@@ -8,16 +8,16 @@ const db = client.db(process.env.DB_NAME);
 
 export const auth = betterAuth({
     baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
-    secret: process.env.BETTER_AUTH_SECRET,
+    // secret: process.env.BETTER_AUTH_SECRET,
 
     // REQUIRED FOR LINKING ACCOUNTS
 
-    account: {
-        accountLinking: {
-            enabled: true,
-            trustedProviders: ["google"],
-        },
-    },
+    // account: {
+    //     accountLinking: {
+    //         enabled: true,
+    //         trustedProviders: ["google"],
+    //     },
+    // },
 
     emailAndPassword: {
         enabled: true,
@@ -30,10 +30,7 @@ export const auth = betterAuth({
         },
     },
 
-    database: mongodbAdapter(db, {
-        // Optional: if you don't provide a client, database transactions won't be enabled.
-        client
-    }),
+    database: mongodbAdapter(db),
 
     // ADD THIS USER SECTION HERE
 

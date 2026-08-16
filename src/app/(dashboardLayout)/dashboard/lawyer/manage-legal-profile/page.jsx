@@ -5,6 +5,8 @@ import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import LawyerProfileForm from "@/components/dashboard/LawyerProfileForm";
 import { useSession } from "@/lib/auth-client";
+import { baseURL } from "@/lib/api/baseUrl";
+import { Loader2 } from "lucide-react";
 
 function LegalProfileContent() {
     const { data: session } = useSession();
@@ -30,7 +32,7 @@ function LegalProfileContent() {
             });
 
             if (user?.id) {
-                fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:5000'}/api/lawyers/verify-payment`, {
+                fetch(`${baseURL}/api/lawyers/verify-payment`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ userId: user.id, sessionId }),
@@ -106,7 +108,9 @@ function LegalProfileContent() {
 
 export default function ManageLawyerLegalProfile() {
     return (
-        <Suspense fallback={<div className="p-8 text-center">Loading legal profile...</div>}>
+        <Suspense fallback={<div className="flex flex-col items-center justify-center h-[85vh] gap-3">
+            <Loader2 size={56} className="animate-spin text-secondary" />
+        </div>}>
             <LegalProfileContent />
         </Suspense>
     );

@@ -11,6 +11,7 @@ import Footer from "@/components/Footer";
 import LawyerDashboardSidebar from "@/components/LawyerDashboardSidebar";
 import AdminDashboardSidebar from "@/components/AdminDashboardSidebar";
 import ClientDashboardSidebar from "@/components/ClientDashboardSidebar";
+import { baseURL } from "@/lib/api/baseUrl";
 
 export default function DashboardLayout({ children }) {
     const pathname = usePathname();
@@ -42,9 +43,9 @@ export default function DashboardLayout({ children }) {
             if (!user?.id) return;
 
             try {
-                const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000";
+                // const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:5000";
 
-                const res = await fetch(`${baseUrl}/api/lawyers/user/${user.id}?t=${Date.now()}`, {
+                const res = await fetch(`${baseURL}/api/lawyers/user/${user.id}?t=${Date.now()}`, {
                     cache: "no-store",
                     headers: {
                         "Cache-Control": "no-cache, no-store, must-revalidate",

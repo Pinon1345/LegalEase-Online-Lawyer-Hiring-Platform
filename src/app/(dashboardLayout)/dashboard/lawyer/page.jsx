@@ -162,7 +162,7 @@ export default function LawyerDashboardOverview() {
 
             {/* Header / Welcome Banner */}
 
-            <div className="relative overflow-hidden rounded-3xl border border-secondary/20 bg-linear-to-r from-neutral-900 via-neutral-900/90 to-surface p-6 md:p-8 shadow-xl backdrop-blur-xl">
+            <div className="relative overflow-hidden rounded-3xl border border-secondary/20 bg-linear-to-r from-surface via-surface/90 to-background p-6 md:p-8 shadow-xl backdrop-blur-xl">
                 <div className="absolute top-0 right-0 -mt-12 -mr-12 h-64 w-64 rounded-full bg-secondary/10 blur-3xl pointer-events-none" />
 
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
@@ -459,7 +459,7 @@ export default function LawyerDashboardOverview() {
                                 : upcomingAppointments.map((appointment) => (
                                     <div
                                         key={appointment.id}
-                                        className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-neutral-900/40 border border-border/50 hover:border-secondary/30 transition"
+                                        className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-slate-100 dark:bg-neutral-900/40 border border-border/50 hover:border-secondary/30 transition"
                                     >
                                         <div className="flex items-center gap-3.5">
                                             <Image
@@ -531,7 +531,7 @@ export default function LawyerDashboardOverview() {
                                 : pendingRequests.map((req) => (
                                     <div
                                         key={req.id}
-                                        className="p-4 rounded-2xl bg-neutral-900/40 border border-border/50 space-y-3"
+                                        className="p-4 rounded-2xl bg-slate-100 dark:bg-neutral-900/40 border border-border/50 space-y-3"
                                     >
                                         <div className="flex items-center justify-between">
                                             <h4 className="font-extrabold text-sm text-text">{req.clientName}</h4>

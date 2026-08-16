@@ -294,7 +294,7 @@ export default function AdminOverview() {
                             System Control & Intelligence
                         </span>
                     </div>
-                    <h1 className="text-3xl font-black text-white mt-2">Admin Overview</h1>
+                    <h1 className="text-3xl font-black text-slate-600 dark:text-white mt-2">Admin Overview</h1>
                     <p className="text-xs text-neutral-400">
                         Real-time analytics, user permissions, revenue metrics, and pending lawyer verifications.
                     </p>
@@ -303,7 +303,7 @@ export default function AdminOverview() {
                 <button
                     onClick={fetchData}
                     disabled={loading}
-                    className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-neutral-900 border border-white/10 hover:border-amber-500/30 text-xs font-bold text-neutral-300 hover:text-amber-400 transition cursor-pointer self-start md:self-auto"
+                    className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-100 dark:bg-neutral-900 border border-white/10 hover:border-amber-500/30 text-xs font-bold text-neutral-800 dark:text-neutral-300 hover:text-amber-400 transition cursor-pointer self-start md:self-auto"
                 >
                     <RefreshCw size={14} className={loading ? "animate-spin" : ""} /> Refresh Stats
                 </button>
@@ -312,7 +312,7 @@ export default function AdminOverview() {
             {/* Dynamic Metrics Cards Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
                 {/* Total System Users */}
-                <div className="p-5 rounded-3xl bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-2 shadow-xl">
+                <div className="p-5 rounded-3xl bg-slate-100 dark:bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-2 shadow-xl">
                     <div className="flex items-center justify-between">
                         <div className="p-2.5 rounded-2xl bg-amber-500/10 text-amber-400">
                             <Users size={18} />
@@ -320,13 +320,13 @@ export default function AdminOverview() {
                         <span className="text-[10px] font-bold text-neutral-400">Accounts</span>
                     </div>
                     <p className="text-[11px] text-neutral-400 font-medium">Total Users</p>
-                    <h3 className="text-2xl font-black text-white">
+                    <h3 className="text-2xl font-black text-gray-500 dark:text-white">
                         {loading ? "..." : stats.totalUsers}
                     </h3>
                 </div>
 
                 {/* Total Registered Lawyers */}
-                <div className="p-5 rounded-3xl bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-2 shadow-xl">
+                <div className="p-5 rounded-3xl bg-slate-100 dark:bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-2 shadow-xl">
                     <div className="flex items-center justify-between">
                         <div className="p-2.5 rounded-2xl bg-amber-500/10 text-amber-400">
                             <Scale size={18} />
@@ -334,13 +334,13 @@ export default function AdminOverview() {
                         <span className="text-[10px] font-bold text-amber-400">Legal Pros</span>
                     </div>
                     <p className="text-[11px] text-neutral-400 font-medium">Total Lawyers</p>
-                    <h3 className="text-2xl font-black text-white">
+                    <h3 className="text-2xl font-black text-gray-500 dark:text-white">
                         {loading ? "..." : stats.totalLawyers}
                     </h3>
                 </div>
 
                 {/* Total Clients */}
-                <div className="p-5 rounded-3xl bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-2 shadow-xl">
+                <div className="p-5 rounded-3xl bg-slate-100 dark:bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-2 shadow-xl">
                     <div className="flex items-center justify-between">
                         <div className="p-2.5 rounded-2xl bg-blue-500/10 text-blue-400">
                             <UserCheck size={18} />
@@ -348,13 +348,13 @@ export default function AdminOverview() {
                         <span className="text-[10px] font-bold text-blue-400">Clients</span>
                     </div>
                     <p className="text-[11px] text-neutral-400 font-medium">Total Clients</p>
-                    <h3 className="text-2xl font-black text-white">
+                    <h3 className="text-2xl font-black text-gray-500 dark:text-white">
                         {loading ? "..." : stats.totalClients}
                     </h3>
                 </div>
 
                 {/* Action Needed: Pending Verifications */}
-                <div className="p-5 rounded-3xl bg-neutral-900/60 border border-amber-500/30 backdrop-blur-xl space-y-2 shadow-xl relative overflow-hidden">
+                <div className="p-5 rounded-3xl bg-slate-100 dark:bg-neutral-900/60 border border-amber-500/30 backdrop-blur-xl space-y-2 shadow-xl relative overflow-hidden">
                     <div className="flex items-center justify-between">
                         <div className="p-2.5 rounded-2xl bg-amber-500/20 text-amber-400">
                             <Clock size={18} />
@@ -368,7 +368,7 @@ export default function AdminOverview() {
                 </div>
 
                 {/* Total Consultations / Hires */}
-                <div className="p-5 rounded-3xl bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-2 shadow-xl">
+                <div className="p-5 rounded-3xl bg-slate-100 dark:bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-2 shadow-xl">
                     <div className="flex items-center justify-between">
                         <div className="p-2.5 rounded-2xl bg-purple-500/10 text-purple-400">
                             <Briefcase size={18} />
@@ -376,13 +376,13 @@ export default function AdminOverview() {
                         <span className="text-[10px] font-bold text-purple-400">Bookings</span>
                     </div>
                     <p className="text-[11px] text-neutral-400 font-medium">Total Hires</p>
-                    <h3 className="text-2xl font-black text-white">
+                    <h3 className="text-2xl font-black text-gray-500 dark:text-white">
                         {loading ? "..." : stats.totalHiresCount}
                     </h3>
                 </div>
 
                 {/* Gross Revenue */}
-                <div className="p-5 rounded-3xl bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-2 shadow-xl">
+                <div className="p-5 rounded-3xl bg-slate-100 dark:bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-2 shadow-xl">
                     <div className="flex items-center justify-between">
                         <div className="p-2.5 rounded-2xl bg-emerald-500/10 text-emerald-400">
                             <DollarSign size={18} />
@@ -390,7 +390,7 @@ export default function AdminOverview() {
                         <span className="text-[10px] font-bold text-emerald-400">Earnings</span>
                     </div>
                     <p className="text-[11px] text-neutral-400 font-medium">Total Revenue</p>
-                    <h3 className="text-2xl font-black text-white">
+                    <h3 className="text-2xl font-black text-gray-500 dark:text-white">
                         {loading
                             ? "..."
                             : `$${stats.totalRevenue.toLocaleString("en-US", {
@@ -402,14 +402,14 @@ export default function AdminOverview() {
             </div>
 
             {/* Dynamic Pending Verification Requests Section */}
-            <div className="p-6 rounded-3xl bg-neutral-900/60 border border-amber-500/20 backdrop-blur-xl space-y-4 shadow-2xl">
+            <div className="p-6 rounded-3xl bg-slate-100 dark:bg-neutral-900/60 border border-amber-500/20 backdrop-blur-xl space-y-4 shadow-2xl">
                 <div className="flex items-center justify-between border-b border-white/10 pb-4">
                     <div className="flex items-center gap-3">
                         <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400">
                             <Clock size={20} />
                         </div>
                         <div>
-                            <h2 className="text-lg font-black text-white">Pending Verification Requests</h2>
+                            <h2 className="text-lg font-black text-gray-800 dark:text-white">Pending Verification Requests</h2>
                             <p className="text-xs text-neutral-400">
                                 Lawyers who have submitted credentials or payment for profile verification.
                             </p>
@@ -425,7 +425,7 @@ export default function AdminOverview() {
                 </div>
 
                 {pendingLawyers.length === 0 ? (
-                    <div className="py-8 text-center text-xs text-neutral-500">
+                    <div className="py-8 text-center text-xs text-neutral-600 dark:text-neutral-500">
                         No pending lawyer verification requests at this moment.
                     </div>
                 ) : (
@@ -444,7 +444,7 @@ export default function AdminOverview() {
                                         className="w-10 h-10 rounded-xl object-cover border border-white/10"
                                     />
                                     <div className="overflow-hidden">
-                                        <h4 className="text-sm font-bold text-white truncate">{getUserDisplayName(lawyer)}</h4>
+                                        <h4 className="text-sm font-bold text-gray-600 dark:text-white truncate">{getUserDisplayName(lawyer)}</h4>
                                         <p className="text-[11px] text-amber-400 truncate">{lawyer.specialization || "Legal Counsel"}</p>
                                         <p className="text-[10px] text-neutral-500 font-mono truncate">{lawyer.email || lawyer.clientEmail}</p>
                                     </div>
@@ -472,7 +472,7 @@ export default function AdminOverview() {
             </div>
 
             {/* Search and Users Filter */}
-            <div className="p-4 rounded-3xl bg-neutral-900/60 border border-white/10 backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl">
+            <div className="p-4 rounded-3xl bg-slate-100 dark:bg-neutral-900/60 border border-white/10 backdrop-blur-xl flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl">
                 <div className="relative w-full md:w-96">
                     <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400" />
                     <input
@@ -480,7 +480,7 @@ export default function AdminOverview() {
                         placeholder="Search users by name or email..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-neutral-950/80 border border-white/10 text-white text-xs placeholder:text-neutral-500 focus:outline-none focus:border-amber-500/50 transition"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-slate-200 dark:bg-neutral-950/80 border border-white/10 text-white text-xs placeholder:text-neutral-500 focus:outline-none focus:border-amber-500/50 transition"
                     />
                 </div>
 
@@ -494,7 +494,7 @@ export default function AdminOverview() {
                             onClick={() => setRoleFilter(role)}
                             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer whitespace-nowrap ${roleFilter === role
                                     ? "bg-amber-500 text-neutral-950 shadow-md"
-                                    : "bg-neutral-950/60 text-neutral-400 hover:text-white hover:bg-neutral-800"
+                                    : "bg-slate-200 dark:bg-neutral-950/60 text-neutral-400 hover:text-white hover:bg-neutral-800"
                                 }`}
                         >
                             {role}
@@ -504,11 +504,11 @@ export default function AdminOverview() {
             </div>
 
             {/* Users Table */}
-            <div className="rounded-3xl border border-white/10 bg-neutral-900/50 backdrop-blur-xl overflow-hidden shadow-2xl">
+            <div className="rounded-3xl border border-white/10 bg-slate-100 dark:bg-neutral-900/50 backdrop-blur-xl overflow-hidden shadow-2xl">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="border-b border-white/10 bg-neutral-950/60 text-[11px] font-black uppercase tracking-wider text-neutral-400">
+                            <tr className="border-b border-white/10 bg-slate-200 border-b-amber-400 dark:border-b-amber-600 dark:bg-neutral-950/60 text-[12px] font-black uppercase tracking-wider text-neutral-800 dark:text-neutral-400">
                                 <th className="py-4 px-6">User / Name</th>
                                 <th className="py-4 px-6">Email Address</th>
                                 <th className="py-4 px-6">Current Role</th>
@@ -520,7 +520,7 @@ export default function AdminOverview() {
                             {filteredUsers.length === 0 ? (
                                 <tr>
                                     <td colSpan={5} className="py-12 text-center text-neutral-500">
-                                        No matching users found.
+                                        Ahh! No matching users found!
                                     </td>
                                 </tr>
                             ) : (
@@ -542,20 +542,20 @@ export default function AdminOverview() {
                                                         className="w-10 h-10 rounded-2xl object-cover border border-white/10"
                                                     />
                                                     <div>
-                                                        <div className="text-white font-bold">{name}</div>
+                                                        <div className="text-gray-700 dark:text-white font-bold">{name}</div>
                                                         <div className="text-[10px] font-mono text-neutral-500">{uId}</div>
                                                     </div>
                                                 </div>
                                             </td>
 
-                                            <td className="py-4 px-6 font-mono text-neutral-300">{user.email || user.clientEmail}</td>
+                                            <td className="py-4 px-6 font-mono text-neutral-800 dark:text-neutral-300">{user.email || user.clientEmail}</td>
                                             <td className="py-4 px-6">{getRoleBadge(role)}</td>
 
                                             <td className="py-4 px-6">
                                                 <select
                                                     value={role}
                                                     onChange={(e) => handleRoleChange(uId, e.target.value)}
-                                                    className="bg-neutral-950 border border-white/10 text-neutral-300 text-xs rounded-xl px-3 py-1.5 focus:outline-none focus:border-amber-500/50 cursor-pointer hover:border-white/20 transition"
+                                                    className="bg-slate-200 dark:bg-neutral-950 border border-white/10 text-gray-600 dark:text-neutral-300 text-xs rounded-xl px-3 py-1.5 focus:outline-none focus:border-amber-500/50 cursor-pointer hover:border-white/20 transition"
                                                 >
                                                     <option value="Client">Client</option>
                                                     <option value="Lawyer">Lawyer</option>
@@ -583,7 +583,7 @@ export default function AdminOverview() {
             {/* Delete Confirmation Modal */}
             {userToDelete && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-950/80 backdrop-blur-md">
-                    <div className="bg-neutral-900 border border-white/10 rounded-3xl p-6 max-w-md w-full space-y-6">
+                    <div className="bg-slate-100 dark:bg-neutral-900 border border-white/10 rounded-3xl p-6 max-w-md w-full space-y-6">
                         <div className="flex items-center gap-3 text-rose-400">
                             <ShieldAlert size={24} />
                             <h3 className="text-lg font-black text-white">Confirm Account Deletion</h3>

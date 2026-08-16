@@ -27,33 +27,42 @@ export default function CommentsSection({ lawyer }) {
     const [showPayModal, setShowPayModal] = useState(false);
     const [loading, setLoading] = useState(true);
 
+    // Safeguard lawyer ID resolution
+    const lawyerId = lawyer?._id || lawyer?.id;
+
     const isClient = user?.role === "client";
     const displayRole = user?.role ? user.role.toUpperCase() : "GUEST";
 
     // 1. Standalone function to load comments (used on initial load and post-submit)
     const loadComments = useCallback(async () => {
-        if (!lawyer?._id) return;
+        if (!lawyerId) return;
 
         try {
-            const res = await fetch(`${baseURL}/api/comments?lawyerId=${lawyer._id}`);
-            if (!res.ok) throw new Error("Failed to fetch comments");
+            const res = await fetch(`${baseURL}/api/comments?lawyerId=${lawyerId}`, {
+                cache: "no-store",
+            });
+            if (!res.ok) {
+                setComments([]);
+                return;
+            }
 
             const data = await res.json();
             setComments(Array.isArray(data) ? data : []);
         } catch (error) {
-            console.error("Error fetching comments:", error);
+            // Silently handle network/server errors so it doesn't throw
             setComments([]);
         } finally {
             setLoading(false);
         }
-    }, [lawyer]);
+    }, [lawyerId]);
 
     // 2. Standalone function to check payment status
     const checkPaymentStatus = useCallback(async () => {
-        if (isClient && user?.email && lawyer?._id) {
+        if (isClient && user?.email && lawyerId) {
             try {
                 const res = await fetch(
-                    `${baseURL}/api/check-payment?clientEmail=${user.email}&lawyerId=${lawyer._id}`
+                    `${baseURL}/api/check-payment?clientEmail=${user.email}&lawyerId=${lawyerId}`,
+                    { cache: "no-store" }
                 );
                 if (!res.ok) throw new Error("Failed to check payment status");
 
@@ -63,7 +72,7 @@ export default function CommentsSection({ lawyer }) {
                 console.error("Error checking payment status:", error);
             }
         }
-    }, [isClient, user, lawyer]);
+    }, [isClient, user, lawyerId]);
 
     // Initial Load Effect (Async wrapper satisfies React Compiler)
     useEffect(() => {
@@ -106,8 +115,8 @@ export default function CommentsSection({ lawyer }) {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    lawyerId: lawyer._id,
-                    lawyerName: lawyer.lawyerName,
+                    lawyerId: lawyerId,
+                    lawyerName: lawyer?.lawyerName || lawyer?.name || "",
                     clientEmail: user.email,
                     clientName: user.name || "Anonymous Client",
                     commentText: newComment,
@@ -126,7 +135,13 @@ export default function CommentsSection({ lawyer }) {
 
             toast.success("Review posted successfully!");
             setNewComment("");
-            loadComments();
+
+            // Immediately reload comments and add a fallback timer to counter any server response delays
+            await loadComments();
+            setTimeout(() => {
+                loadComments();
+            }, 500);
+
         } catch (error) {
             toast.error(error.message || "Something went wrong.");
         }
@@ -169,7 +184,7 @@ export default function CommentsSection({ lawyer }) {
             {isClient ? (
                 <form
                     onSubmit={handleSubmitComment}
-                    className="space-y-4 rounded-3xl border border-border/80 bg-neutral-900/40 p-5 md:p-6 backdrop-blur-xl shadow-xl transition-all duration-300 hover:border-secondary/30"
+                    className="space-y-4 rounded-3xl border border-border/80 bg-linear-to-r from-background via-background/90 to-surface p-5 md:p-6 backdrop-blur-xl shadow-xl transition-all duration-300 hover:border-secondary/30 bg-surface/80"
                 >
                     <div className="flex items-center justify-between">
                         <label className="text-xs font-bold uppercase tracking-wider text-text flex items-center gap-2">

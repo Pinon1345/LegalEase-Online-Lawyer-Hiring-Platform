@@ -1,10 +1,72 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { FaUserTie } from "react-icons/fa";
 import { FaArrowUpRightFromSquare, FaHandshakeSimple, FaScaleBalanced, FaUsersViewfinder } from "react-icons/fa6";
 import { IoShieldCheckmarkSharp } from "react-icons/io5";
+
+// Helper component for counting animation
+const AnimatedCounter = ({ value }) => {
+    const [count, setCount] = useState(0);
+    const nodeRef = useRef(null);
+    const [hasAnimated, setHasAnimated] = useState(false);
+
+    // Extract numerical value and suffix (e.g., "1,250+" -> num: 1250, suffix: "+")
+    const numericValue = parseInt(value.replace(/,/g, ""), 10);
+    const suffix = value.replace(/[0-9]/g, "");
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting && !hasAnimated) {
+                    setHasAnimated(true);
+                }
+            },
+            { threshold: 0.3 }
+        );
+
+        if (nodeRef.current) {
+            observer.observe(nodeRef.current);
+        }
+
+        return () => {
+            if (nodeRef.current) observer.unobserve(nodeRef.current);
+        };
+    }, [hasAnimated]);
+
+    useEffect(() => {
+        if (!hasAnimated) return;
+
+        let startTime;
+        const duration = 6000; // Animation duration in milliseconds (2 seconds)
+
+        const animateCount = (timestamp) => {
+            if (!startTime) startTime = timestamp;
+            const progress = Math.min((timestamp - startTime) / duration, 1);
+
+            // Easing effect for smooth slowdown towards the end
+            const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+
+            setCount(Math.floor(easeOutQuart * numericValue));
+
+            if (progress < 1) {
+                requestAnimationFrame(animateCount);
+            } else {
+                setCount(numericValue);
+            }
+        };
+
+        requestAnimationFrame(animateCount);
+    }, [hasAnimated, numericValue]);
+
+    return (
+        <span ref={nodeRef}>
+            {count.toLocaleString()}
+            {suffix}
+        </span>
+    );
+};
 
 const stats = [
     {
@@ -112,7 +174,7 @@ const StatsSection = () => {
 
                                     {/* Stat Counter / Value */}
                                     <h3 className="text-3xl sm:text-4xl font-black text-text tracking-tight group-hover:text-secondary transition-colors duration-300">
-                                        {item.valueStats}
+                                        <AnimatedCounter value={item.valueStats} />
                                     </h3>
 
                                     {/* Stat Title */}

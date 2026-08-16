@@ -20,7 +20,7 @@ import {
     FaScaleBalanced,
 } from "react-icons/fa6";
 
-import { authClient } from "@/lib/auth-client";
+import { authClient, signIn } from "@/lib/auth-client";
 
 import toast from "react-hot-toast";
 
@@ -130,15 +130,18 @@ export default function SigninPage() {
     // Social Signin Handler
 
     const handleGoogleSignin = async () => {
-        try {
-            await authClient.signIn.social({
-                provider: "google",
-                callbackURL: "/",
-            });
-        } catch (err) {
-            console.error("Google Signin Exception:", err);
-            toast.error("Google Sign-In failed!");
-        }
+        await signIn.social({
+            provider: "google"
+        })
+        // try {
+        //     await authClient.signIn.social({
+        //         provider: "google",
+        //         callbackURL: "/",
+        //     });
+        // } catch (err) {
+        //     console.error("Google Signin Exception:", err);
+        //     toast.error("Google Sign-In failed!");
+        // }
     };
 
     return (

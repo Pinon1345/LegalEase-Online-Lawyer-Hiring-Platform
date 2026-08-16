@@ -133,7 +133,7 @@ export default function AdminAnalytics() {
                             Platform Metrics
                         </span>
                     </div>
-                    <h1 className="text-3xl font-black text-white mt-2">
+                    <h1 className="text-3xl font-black text-gray-800 dark:text-white mt-2">
                         Analytics Overview
                     </h1>
                     <p className="text-xs text-neutral-400">
@@ -142,15 +142,15 @@ export default function AdminAnalytics() {
                 </div>
 
                 {/* Time Filter Toggle */}
-                <div className="flex items-center gap-2 bg-neutral-900/80 p-1.5 rounded-2xl border border-white/10 self-start md:self-auto">
-                    <Calendar size={14} className="text-neutral-400 ml-2" />
+                <div className="flex items-center gap-2 bg-slate-200 dark:bg-neutral-900/80 p-1.5 rounded-2xl border border-white/10 self-start md:self-auto">
+                    <Calendar size={14} className="text-neutral-600 dark:text-neutral-400 ml-2" />
                     {["7d", "30d", "90d", "1y"].map((range) => (
                         <button
                             key={range}
                             onClick={() => setTimeRange(range)}
                             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${timeRange === range
                                     ? "bg-amber-500 text-neutral-950 shadow-md"
-                                    : "text-neutral-400 hover:text-white"
+                                    : "text-neutral-600 dark:text-neutral-400 hover:text-white"
                                 }`}
                         >
                             {range.toUpperCase()}
@@ -162,7 +162,7 @@ export default function AdminAnalytics() {
             {/* Dynamic Analytics Overview Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 {/* Card 1: Total Users */}
-                <div className="p-6 rounded-3xl bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-4 shadow-xl hover:border-amber-500/30 transition duration-300">
+                <div className="p-6 rounded-3xl bg-slate-100 dark:bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-4 shadow-xl hover:border-amber-500/30 transition duration-300">
                     <div className="flex items-center justify-between">
                         <div className="p-3 rounded-2xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
                             <Users size={22} />
@@ -175,7 +175,7 @@ export default function AdminAnalytics() {
                         <p className="text-xs text-neutral-400 font-semibold uppercase tracking-wider">
                             Total Users
                         </p>
-                        <h3 className="text-3xl font-black text-white mt-1">
+                        <h3 className="text-3xl font-black text-gray-800 dark:text-white mt-1">
                             {metrics.totalUsers.toLocaleString()}
                         </h3>
                         <p className="text-[11px] text-neutral-500 mt-1">
@@ -185,7 +185,7 @@ export default function AdminAnalytics() {
                 </div>
 
                 {/* Card 2: Total Lawyers */}
-                <div className="p-6 rounded-3xl bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-4 shadow-xl hover:border-amber-500/30 transition duration-300">
+                <div className="p-6 rounded-3xl bg-slate-100 dark:bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-4 shadow-xl hover:border-amber-500/30 transition duration-300">
                     <div className="flex items-center justify-between">
                         <div className="p-3 rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
                             <Scale size={22} />
@@ -198,7 +198,7 @@ export default function AdminAnalytics() {
                         <p className="text-xs text-neutral-400 font-semibold uppercase tracking-wider">
                             Total Lawyers
                         </p>
-                        <h3 className="text-3xl font-black text-white mt-1">
+                        <h3 className="text-3xl font-black text-gray-800 dark:text-white mt-1">
                             {metrics.totalLawyers.toLocaleString()}
                         </h3>
                         <p className="text-[11px] text-neutral-500 mt-1">
@@ -208,7 +208,7 @@ export default function AdminAnalytics() {
                 </div>
 
                 {/* Card 3: Total Hires */}
-                <div className="p-6 rounded-3xl bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-4 shadow-xl hover:border-amber-500/30 transition duration-300">
+                <div className="p-6 rounded-3xl bg-slate-100 dark:bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-4 shadow-xl hover:border-amber-500/30 transition duration-300">
                     <div className="flex items-center justify-between">
                         <div className="p-3 rounded-2xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
                             <Briefcase size={22} />
@@ -221,7 +221,7 @@ export default function AdminAnalytics() {
                         <p className="text-xs text-neutral-400 font-semibold uppercase tracking-wider">
                             Total Hires
                         </p>
-                        <h3 className="text-3xl font-black text-white mt-1">
+                        <h3 className="text-3xl font-black text-gray-800 dark:text-white mt-1">
                             {metrics.totalHires.toLocaleString()}
                         </h3>
                         <p className="text-[11px] text-neutral-500 mt-1">
@@ -231,7 +231,7 @@ export default function AdminAnalytics() {
                 </div>
 
                 {/* Card 4: Total Revenue */}
-                <div className="p-6 rounded-3xl bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-4 shadow-xl hover:border-amber-500/30 transition duration-300">
+                <div className="p-6 rounded-3xl bg-slate-100 dark:bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-4 shadow-xl hover:border-amber-500/30 transition duration-300">
                     <div className="flex items-center justify-between">
                         <div className="p-3 rounded-2xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                             <DollarSign size={22} />
@@ -244,7 +244,7 @@ export default function AdminAnalytics() {
                         <p className="text-xs text-neutral-400 font-semibold uppercase tracking-wider">
                             Total Revenue
                         </p>
-                        <h3 className="text-3xl font-black text-white mt-1">
+                        <h3 className="text-3xl font-black text-gray-800 dark:text-white mt-1">
                             ${metrics.totalRevenue.toLocaleString("en-US", { minimumFractionDigits: 2 })}
                         </h3>
                         <p className="text-[11px] text-neutral-500 mt-1">
@@ -256,13 +256,13 @@ export default function AdminAnalytics() {
 
             {/* Visual Breakdown Section */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div className="lg:col-span-2 p-6 rounded-3xl bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-6 shadow-2xl">
+                <div className="lg:col-span-2 p-6 rounded-3xl bg-slate-200 dark:bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-6 shadow-2xl">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h3 className="text-lg font-black text-white flex items-center gap-2">
+                            <h3 className="text-lg font-black text-gray-800 dark:text-white flex items-center gap-2">
                                 <BarChart3 size={18} className="text-amber-400" /> Revenue & Hire Distribution
                             </h3>
-                            <p className="text-xs text-neutral-400 mt-0.5">
+                            <p className="text-xs text-neutral-600 dark:text-neutral-400 mt-0.5">
                                 Monthly snapshot comparing case bookings against gross earnings
                             </p>
                         </div>
@@ -280,8 +280,8 @@ export default function AdminAnalytics() {
                         ].map((item) => (
                             <div key={item.month} className="space-y-1.5">
                                 <div className="flex justify-between text-xs font-mono">
-                                    <span className="text-neutral-300 font-bold">{item.month}</span>
-                                    <span className="text-neutral-400">
+                                    <span className="text-neutral-500 dark:text-neutral-300 font-bold">{item.month}</span>
+                                    <span className="text-neutral-600 dark:text-neutral-400">
                                         {item.hires} hires / ${item.revenue * 480}
                                     </span>
                                 </div>
@@ -299,7 +299,7 @@ export default function AdminAnalytics() {
                         ))}
                     </div>
 
-                    <div className="flex items-center justify-between text-xs text-neutral-400 pt-2 border-t border-white/5">
+                    <div className="flex items-center justify-between text-xs text-neutral-600 dark:text-neutral-400 pt-2 border-t border-white/5">
                         <div className="flex items-center gap-4">
                             <span className="flex items-center gap-1.5">
                                 <span className="w-2.5 h-2.5 rounded-full bg-amber-500" /> Revenue Growth
@@ -312,32 +312,32 @@ export default function AdminAnalytics() {
                     </div>
                 </div>
 
-                <div className="p-6 rounded-3xl bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-6 shadow-2xl flex flex-col justify-between">
+                <div className="p-6 rounded-3xl bg-slate-200 dark:bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-6 shadow-2xl flex flex-col justify-between">
                     <div className="space-y-4">
-                        <h3 className="text-lg font-black text-white flex items-center gap-2">
+                        <h3 className="text-lg font-black text-gray-800 dark:text-white flex items-center gap-2">
                             <Sparkles size={18} className="text-amber-400" /> Executive Insights
                         </h3>
 
                         <div className="space-y-3 text-xs">
-                            <div className="p-3.5 rounded-2xl bg-neutral-950 border border-white/5 space-y-1">
+                            <div className="p-3.5 rounded-2xl bg-slate-100 dark:bg-neutral-950 border border-white/5 space-y-1">
                                 <p className="text-amber-400 font-bold">Top Hire Category</p>
-                                <p className="text-neutral-300">Corporate & Business Law accounts for active client hires.</p>
+                                <p className="text-neutral-500 dark:text-neutral-300">Corporate & Business Law accounts for active client hires.</p>
                             </div>
 
                             <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 space-y-1">
                                 <p className="text-emerald-400 font-bold">Total Platform Database</p>
-                                <p className="text-neutral-300">Currently managing {metrics.totalUsers} total registered user profiles.</p>
+                                <p className="text-neutral-700 dark:text-neutral-300">Currently managing {metrics.totalUsers} total registered user profiles.</p>
                             </div>
 
-                            <div className="p-3.5 rounded-2xl bg-neutral-950 border border-white/5 space-y-1">
+                            <div className="p-3.5 rounded-2xl bg-slate-100 dark:bg-neutral-950 border border-white/5 space-y-1">
                                 <p className="text-blue-400 font-bold">Lawyer Retention</p>
-                                <p className="text-neutral-300">{metrics.totalLawyers} verified legal professionals active on platform.</p>
+                                <p className="text-neutral-500 dark:text-neutral-300">{metrics.totalLawyers} verified legal professionals active on platform.</p>
                             </div>
                         </div>
                     </div>
 
                     <div className="pt-4 border-t border-white/5">
-                        <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-300 flex items-center justify-between">
+                        <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-600 dark:text-amber-300 flex items-center justify-between">
                             <span>Next automated report sync:</span>
                             <span className="font-mono font-bold">Live API</span>
                         </div>

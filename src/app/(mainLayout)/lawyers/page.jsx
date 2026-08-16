@@ -114,7 +114,7 @@ export default function BrowseLawyersPage() {
     }, []);
 
     // Generate page number buttons with truncation for a premium look
-    
+
     const getPageNumbers = () => {
         const pages = [];
         const maxVisiblePages = 5;
@@ -173,7 +173,7 @@ export default function BrowseLawyersPage() {
                                 setCurrentPage(1);
                                 updateUrlParams({ search: val, page: 1 });
                             }}
-                            className="w-full rounded-2xl border border-border/80 bg-neutral-900/40 pl-11 pr-4 py-3 text-sm text-text placeholder:text-text-secondary focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary transition"
+                            className="w-full rounded-2xl border border-border/80 bg-slate-100 dark:bg-neutral-900/40 pl-11 pr-4 py-3 text-sm text-text placeholder:text-text-secondary focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary transition"
                         />
                     </div>
 
@@ -188,11 +188,11 @@ export default function BrowseLawyersPage() {
                                 setCurrentPage(1);
                                 updateUrlParams({ specialization: val, page: 1 });
                             }}
-                            className="w-full appearance-none rounded-2xl border border-border/80 bg-neutral-900/40 pl-10 pr-8 py-3 text-sm text-text focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary transition cursor-pointer"
+                            className="w-full appearance-none rounded-2xl border border-border/80 bg-slate-100 dark:bg-neutral-900/40 pl-10 pr-8 py-3 text-sm text-text focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary transition cursor-pointer"
                         >
-                            <option value="All" className="bg-neutral-900 text-white">All Specializations</option>
+                            <option value="All" className="bg-slate-100 dark:bg-neutral-900 text-gray-600 dark:text-white">All Specializations</option>
                             {categories.filter((c) => c !== "All").map((cat) => (
-                                <option key={cat} value={cat} className="bg-neutral-900 text-white">
+                                <option key={cat} value={cat} className="bg-slate-100 dark:bg-neutral-900 text-gray-600 dark:text-white">
                                     {cat}
                                 </option>
                             ))}
@@ -209,11 +209,11 @@ export default function BrowseLawyersPage() {
                                 setCurrentPage(1);
                                 updateUrlParams({ availability: val, page: 1 });
                             }}
-                            className="w-full appearance-none rounded-2xl border border-border/80 bg-neutral-900/40 px-4 py-3 text-sm text-text focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary transition cursor-pointer"
+                            className="w-full appearance-none rounded-2xl border border-border/80 bg-slate-100 dark:bg-neutral-900/40 px-4 py-3 text-sm text-text focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary transition cursor-pointer"
                         >
-                            <option value="All" className="bg-neutral-900 text-white">All Status</option>
-                            <option value="available" className="bg-neutral-900 text-white">Available</option>
-                            <option value="busy" className="bg-neutral-900 text-white">Busy</option>
+                            <option value="All" className="bg-slate-100 dark:bg-neutral-900 text-gray-600 dark:text-white">All Status</option>
+                            <option value="available" className="bg-slate-100 dark:bg-neutral-900 text-gray-600 dark:text-white">Available</option>
+                            <option value="busy" className="bg-slate-100 dark:bg-neutral-900 text-gray-600 dark:text-white">Busy</option>
                         </select>
                     </div>
 
@@ -228,13 +228,13 @@ export default function BrowseLawyersPage() {
                                 setCurrentPage(1);
                                 updateUrlParams({ sortBy: val, page: 1 });
                             }}
-                            className="w-full appearance-none rounded-2xl border border-border/80 bg-neutral-900/40 pl-10 pr-4 py-3 text-sm text-text focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary transition cursor-pointer"
+                            className="w-full appearance-none rounded-2xl border border-border/80 bg-slate-100 dark:bg-neutral-900/40 pl-10 pr-4 py-3 text-sm text-text focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary transition cursor-pointer"
                         >
-                            <option value="default" className="bg-neutral-900 text-white">Sort By</option>
-                            <option value="price-low" className="bg-neutral-900 text-white">Price: Low to High</option>
-                            <option value="price-high" className="bg-neutral-900 text-white">Price: High to Low</option>
-                            <option value="experience" className="bg-neutral-900 text-white">Most Experienced</option>
-                            <option value="rating" className="bg-neutral-900 text-white">Top Rated</option>
+                            <option value="default" className="bg-slate-100 dark:bg-neutral-900 text-gray-600 dark:text-white">Sort By</option>
+                            <option value="price-low" className="bg-slate-100 dark:bg-neutral-900 text-gray-600 dark:text-white">Price: Low to High</option>
+                            <option value="price-high" className="bg-slate-100 dark:bg-neutral-900 text-gray-600 dark:text-white">Price: High to Low</option>
+                            <option value="experience" className="bg-slate-100 dark:bg-neutral-900 text-gray-600 dark:text-white">Most Experienced</option>
+                            <option value="rating" className="bg-slate-100 dark:bg-neutral-900 text-gray-600 dark:text-white">Top Rated</option>
                         </select>
                     </div>
                 </div>
@@ -242,15 +242,15 @@ export default function BrowseLawyersPage() {
 
             {/* Results count indicator moved below the filters */}
             <div className="flex justify-between items-center text-xs text-text-secondary px-2">
-                <span>Showing <span className="font-bold text-lg text-emerald-400">{lawyers.length}</span> of <span className="font-bold text-lg text-amber-400">{totalLawyers}</span> Legal Experts</span>
-                <span>Page <span className="font-bold text-lg text-emerald-400">{currentPage}</span> of <span className="font-bold text-lg text-amber-400">{totalPages}</span></span>
+                <span>Showing <span className="font-bold text-lg text-emerald-600 dark:text-emerald-400">{lawyers.length}</span> of <span className="font-bold text-lg text-amber-600 dark:text-amber-400">{totalLawyers}</span> Legal Experts</span>
+                <span>Page <span className="font-bold text-lg text-emerald-600 dark:text-emerald-400">{currentPage}</span> of <span className="font-bold text-lg text-amber-600 dark:text-amber-400">{totalPages}</span></span>
             </div>
 
             {/* Error Message Display */}
             {error && (
                 <div className="flex items-center gap-3 p-4 rounded-2xl bg-danger/10 border border-danger/30 text-danger text-sm font-semibold">
                     <AlertCircle size={20} className="shrink-0" />
-                    <span>Unable to connect to backend server: {error}. Make sure server on port 5000 is running.</span>
+                    <span>Unable to Connect to Backend Server: {error}. Make Sure Your Server is Running Well.</span>
                 </div>
             )}
 
@@ -273,7 +273,7 @@ export default function BrowseLawyersPage() {
             ) : lawyers.length === 0 ? (
                 <div className="text-center py-16 px-4 rounded-3xl border border-dashed border-border/60 bg-surface/30">
                     <SlidersHorizontal size={48} className="mx-auto text-text-secondary mb-4 opacity-50" />
-                    <h3 className="text-xl font-bold text-text mb-1">No Lawyers Found</h3>
+                    <h3 className="text-xl font-bold text-text mb-1">Ahh! No Lawyers Found!</h3>
                     <p className="text-text-secondary text-sm max-w-md mx-auto mb-6">
                         We couldn&apos;t find any legal experts matching your active filters or search terms.
                     </p>
@@ -322,6 +322,7 @@ export default function BrowseLawyersPage() {
                             </button>
 
                             {/* Page Numbers with Glassmorphic pill style */}
+
                             <div className="flex items-center gap-2 overflow-x-auto py-2">
                                 {getPageNumbers().map((page, index) => {
                                     if (page === "...") {
@@ -344,7 +345,7 @@ export default function BrowseLawyersPage() {
                                             }}
                                             className={`w-10 h-10 rounded-2xl font-bold text-xs flex items-center justify-center transition-all shadow-md ${isActive
                                                 ? "bg-secondary text-neutral-950 shadow-secondary/30 ring-2 ring-secondary/50"
-                                                : "bg-neutral-900/60 border border-border/80 text-text hover:bg-secondary/20 hover:border-secondary/40"
+                                                : "bg-slate-100 dark:bg-neutral-900/60 border border-border/80 text-text hover:bg-secondary/20 hover:border-secondary/40"
                                                 }`}
                                         >
                                             {page}

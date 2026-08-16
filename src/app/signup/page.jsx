@@ -23,7 +23,7 @@ import {
 } from "react-icons/fa6";
 
 import RoleSelectionModal from "@/components/RoleSelectionModal";
-import { authClient } from "@/lib/auth-client";
+import { authClient, signIn } from "@/lib/auth-client";
 import toast from "react-hot-toast";
 
 export default function SignupPage() {
@@ -165,18 +165,21 @@ export default function SignupPage() {
         } finally {
             setIsSubmitting(false);
         }
-        
+
     };
 
     const handleGoogleSignup = async () => {
-        try {
-            await authClient.signIn.social({
-                provider: "google",
-                callbackURL: "/",
-            });
-        } catch (err) {
-            console.error("Google Signin Exception:", err);
-        }
+        await signIn.social({
+            provider: "google"
+        })
+        // try {
+        //     await authClient.signIn.social({
+        //         provider: "google",
+        //         callbackURL: "/",
+        //     });
+        // } catch (err) {
+        //     console.error("Google Signin Exception:", err);
+        // }
     };
 
     return (
