@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { Modal, Button } from "@heroui/react";
 import { useSession } from "@/lib/auth-client";
 import { baseURL } from "@/lib/api/baseUrl";
+import { getTokenServer } from "@/lib/getTokenServer";
 
 export default function ClientCommentsPage() {
     const { data: session, isPending: sessionLoading } = useSession();
@@ -26,13 +27,20 @@ export default function ClientCommentsPage() {
         let isMounted = true;
 
         const fetchMyComments = async () => {
+            
+            const token = await getTokenServer();
+
             if (!user?.email) {
                 if (!sessionLoading && isMounted) setLoading(false);
                 return;
             }
 
             try {
-                const res = await fetch(`${baseURL}/api/comments?clientEmail=${user.email}`);
+                const res = await fetch(`${baseURL}/api/comments?clientEmail=${user.email}`, {
+                    headers: {
+                        authorization: `Bearer ${token}`
+                    }
+                });
                 if (!res.ok) throw new Error("Failed to fetch comments");
 
                 const data = await res.json();

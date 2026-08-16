@@ -18,12 +18,17 @@ import {
 import { baseURL } from "@/lib/api/baseUrl";
 import BookingWidget from "@/components/lawyers/BookingWidget";
 import CommentsSection from "@/components/lawyers/CommentsSection";
+import { getTokenServer } from "@/lib/getTokenServer";
 
 // Fetch single lawyer data from backend API
 const fetchLawyer = async (id) => {
     try {
+        const token = await getTokenServer();
         const res = await fetch(`${baseURL}/api/single-lawyers/${id}`, {
             cache: "no-store",
+            headers: {
+                authorization: `Bearer ${token}`
+            },
         });
         if (!res.ok) return null;
         return await res.json();

@@ -12,7 +12,6 @@ import {
     Star,
     Briefcase,
     Eye,
-    Mail,
     Phone,
     Award,
     Loader2,
@@ -33,6 +32,14 @@ export default function AdminLawyersListing() {
     const [statusFilter, setStatusFilter] = useState("All");
     const [selectedLawyer, setSelectedLawyer] = useState(null);
 
+    // Helper function to safely extract array from API response
+    const extractLawyersData = (data) => {
+        if (Array.isArray(data)) return data;
+        if (data && Array.isArray(data.lawyers)) return data.lawyers;
+        if (data && Array.isArray(data.data)) return data.data;
+        return [];
+    };
+
     // Initial Data Fetching safely inside useEffect
     useEffect(() => {
         let isMounted = true;
@@ -46,7 +53,7 @@ export default function AdminLawyersListing() {
                 }
                 const data = await response.json();
                 if (isMounted) {
-                    setLawyers(data);
+                    setLawyers(extractLawyersData(data));
                 }
             } catch (err) {
                 if (isMounted) {
@@ -77,7 +84,7 @@ export default function AdminLawyersListing() {
                 throw new Error("Failed to fetch lawyer directory data.");
             }
             const data = await response.json();
-            setLawyers(data);
+            setLawyers(extractLawyersData(data));
             toast.success("Directory refreshed");
         } catch (err) {
             setError(err.message || "An unexpected error occurred.");
@@ -87,13 +94,14 @@ export default function AdminLawyersListing() {
         }
     };
 
-    // Filter Logic
+    // Filter Logic with Array Safeguard
     const filteredLawyers = useMemo(() => {
-        return lawyers.filter((lawyer) => {
-            const name = lawyer.name || "";
+        const safeLawyers = Array.isArray(lawyers) ? lawyers : [];
+        return safeLawyers.filter((lawyer) => {
+            const name = lawyer.lawyerName || "";
             const email = lawyer.email || "";
             const specialization = lawyer.specialization || "";
-            const barNumber = lawyer.barNumber || "";
+            const barNumber = lawyer.barNumber || lawyer.userId || "";
 
             const matchesSearch =
                 name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -102,7 +110,7 @@ export default function AdminLawyersListing() {
                 barNumber.toLowerCase().includes(searchTerm.toLowerCase());
 
             const matchesStatus =
-                statusFilter === "All" || lawyer.status === statusFilter;
+                statusFilter === "All" || lawyer.availabilityStatus === statusFilter;
 
             return matchesSearch && matchesStatus;
         });
@@ -118,10 +126,9 @@ export default function AdminLawyersListing() {
             const isVerificationUpdate = typeof newStatus === "boolean";
             const bodyPayload = isVerificationUpdate
                 ? { isVerified: newStatus }
-                : { status: newStatus };
+                : { availabilityStatus: newStatus };
 
-            // Replace http://localhost:5000 with your actual backend URL variable if available
-            const serverUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+            const serverUrl = process.env.NEXT_PUBLIC_API_URL || baseURL || "http://localhost:5000";
 
             const response = await fetch(`${serverUrl}/api/lawyers/${lawyerId}`, {
                 method: "PATCH",
@@ -135,15 +142,16 @@ export default function AdminLawyersListing() {
             }
 
             // Update local state
-            setLawyers((prev) =>
-                prev.map((l) =>
+            setLawyers((prev) => {
+                const list = Array.isArray(prev) ? prev : [];
+                return list.map((l) =>
                     l._id === lawyerId || l.id === lawyerId || l.userId === lawyerId
                         ? isVerificationUpdate
                             ? { ...l, isVerified: newStatus }
-                            : { ...l, status: newStatus }
+                            : { ...l, availabilityStatus: newStatus }
                         : l
-                )
-            );
+                );
+            });
 
             if (
                 selectedLawyer &&
@@ -153,7 +161,7 @@ export default function AdminLawyersListing() {
                     prev
                         ? isVerificationUpdate
                             ? { ...prev, isVerified: newStatus }
-                            : { ...prev, status: newStatus }
+                            : { ...prev, availabilityStatus: newStatus }
                         : null
                 );
             }
@@ -233,7 +241,7 @@ export default function AdminLawyersListing() {
                         <span className="text-[10px] font-bold text-neutral-400">Total Listed</span>
                     </div>
                     <p className="text-xs text-neutral-400 font-medium">Total Lawyers</p>
-                    <h3 className="text-2xl font-black text-white">{lawyers.length}</h3>
+                    <h3 className="text-2xl font-black text-white">{Array.isArray(lawyers) ? lawyers.length : 0}</h3>
                 </div>
 
                 <div className="p-5 rounded-3xl bg-neutral-900/60 border border-white/10 backdrop-blur-xl space-y-2 shadow-xl">
@@ -245,7 +253,7 @@ export default function AdminLawyersListing() {
                     </div>
                     <p className="text-xs text-neutral-400 font-medium">Verified Practitioners</p>
                     <h3 className="text-2xl font-black text-white">
-                        {lawyers.filter((l) => l.status === "Verified").length}
+                        {Array.isArray(lawyers) ? lawyers.filter((l) => l.availabilityStatus === "Verified" || l.isVerified === true).length : 0}
                     </h3>
                 </div>
 
@@ -259,9 +267,9 @@ export default function AdminLawyersListing() {
                     <p className="text-xs text-neutral-400 font-medium">Pending Approvals</p>
                     <h3 className="text-2xl font-black text-white">
                         {
-                            lawyers.filter(
-                                (l) => l.status === "Pending Verification" || l.status === "Pending Review"
-                            ).length
+                            Array.isArray(lawyers) ? lawyers.filter(
+                                (l) => l.availabilityStatus === "Pending Verification" || l.availabilityStatus === "Pending Review"
+                            ).length : 0
                         }
                     </h3>
                 </div>
@@ -275,7 +283,7 @@ export default function AdminLawyersListing() {
                     </div>
                     <p className="text-xs text-neutral-400 font-medium">Suspended Accounts</p>
                     <h3 className="text-2xl font-black text-white">
-                        {lawyers.filter((l) => l.status === "Suspended").length}
+                        {Array.isArray(lawyers) ? lawyers.filter((l) => l.availabilityStatus === "Suspended").length : 0}
                     </h3>
                 </div>
             </div>
@@ -366,7 +374,7 @@ export default function AdminLawyersListing() {
                                                 <div className="flex items-center gap-3">
                                                     <Image
                                                         src={lawyer.lawyerImage || lawyer.image || "https://i.pravatar.cc/150"}
-                                                        alt={lawyer.name || "Lawyer Profile"}
+                                                        alt={lawyer.lawyerName || lawyer.name || "Lawyer Profile"}
                                                         width={44}
                                                         height={44}
                                                         className="w-11 h-11 rounded-2xl object-cover border border-white/10"
@@ -393,8 +401,7 @@ export default function AdminLawyersListing() {
 
                                             {/* Specialization & Hourly Rate */}
                                             <td className="py-4 px-6">
-                                                <div className="text-white font-medium">{lawyer.
-                                                    specialization || "N/A"}</div>
+                                                <div className="text-white font-medium">{lawyer.specialization || "N/A"}</div>
                                                 <div className="text-[11px] text-amber-400 font-bold mt-0.5">
                                                     ${lawyer.hourlyRate || lawyer.rate || 0}/hr
                                                 </div>
@@ -448,7 +455,6 @@ export default function AdminLawyersListing() {
             </div>
 
             {/* Lawyer Profile Modal */}
-
             {selectedLawyer && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-950/80 backdrop-blur-md animate-fade-in">
                     <div className="bg-neutral-900 border border-white/10 rounded-3xl p-6 md:p-8 max-w-lg w-full shadow-2xl space-y-6 relative">
@@ -462,7 +468,7 @@ export default function AdminLawyersListing() {
                         <div className="flex items-center gap-4 border-b border-white/10 pb-5">
                             <Image
                                 src={selectedLawyer.lawyerImage || selectedLawyer.image || "https://i.pravatar.cc/150"}
-                                alt={selectedLawyer.name || "Lawyer"}
+                                alt={selectedLawyer.lawyerName || selectedLawyer.name || "Lawyer"}
                                 width={64}
                                 height={64}
                                 className="w-16 h-16 rounded-2xl object-cover border border-amber-500/30"
@@ -525,7 +531,7 @@ export default function AdminLawyersListing() {
                                             const targetId = selectedLawyer._id || selectedLawyer.id || selectedLawyer.userId;
                                             handleStatusChange(targetId, "Suspended");
                                         }}
-                                        className={`flex-1 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${selectedLawyer.status === "Suspended"
+                                        className={`flex-1 py-2 rounded-xl text-xs font-bold transition cursor-pointer ${selectedLawyer.availabilityStatus === "Suspended"
                                             ? "bg-rose-500 text-white"
                                             : "bg-neutral-950 text-neutral-300 hover:bg-neutral-800"
                                             }`}

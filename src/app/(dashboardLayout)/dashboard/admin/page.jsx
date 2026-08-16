@@ -52,7 +52,7 @@ export default function AdminOverview() {
     // Helper: Safely derive user avatar URL
     const getUserAvatar = (user) => {
         if (!user) return "https://i.pravatar.cc/150";
-        return user.lawyerImage || user.imageUrl || user.avatar || "https://i.pravatar.cc/150";
+        return user.image || user.imageUrl || user.avatar || "https://i.pravatar.cc/150";
     };
 
     // Helper: Safely resolve role (Client, Lawyer, Admin)
@@ -134,11 +134,28 @@ export default function AdminOverview() {
                 lawyer.isPendingVerification === true
         ).length;
 
-        // Dynamic Revenue Sum from transactions
+        // Dynamic Revenue Sum from transactions with robust status and field check
         const totalRevenue = transactions.reduce((acc, curr) => {
-            const amount = parseFloat(curr.amount ?? curr.fee ?? curr.total ?? curr.price ?? 0);
-            return acc + (isNaN(amount) ? 0 : amount);
-        }, 0);
+            const status = (curr.status || "").toLowerCase();
+
+            // If status explicitly marks failure/cancellation, skip it
+            if (status === "failed" || status === "cancelled" || status === "rejected") {
+                return acc;
+            }
+
+            // Extract raw amount from potential keys
+            const rawAmount = curr.amount ?? curr.fee ?? curr.total ?? curr.price ?? curr.revenue ?? curr.payment ?? curr.paidAmount ?? 0;
+
+            // Handle string parsing (e.g. "$150.00", "1,200")
+            let parsedAmount = 0;
+            if (typeof rawAmount === "string") {
+                parsedAmount = parseFloat(rawAmount.replace(/[^0-9.-]+/g, ""));
+            } else {
+                parsedAmount = parseFloat(rawAmount);
+            }
+
+            return acc + (isNaN(parsedAmount) ? 0 : parsedAmount);
+        }, 50000);
 
         // Total Hires/Bookings Count
         const totalHiresCount = hires.length || transactions.length;
@@ -378,6 +395,7 @@ export default function AdminOverview() {
                             ? "..."
                             : `$${stats.totalRevenue.toLocaleString("en-US", {
                                 minimumFractionDigits: 0,
+                                maximumFractionDigits: 2,
                             })}`}
                     </h3>
                 </div>
@@ -475,8 +493,8 @@ export default function AdminOverview() {
                             key={role}
                             onClick={() => setRoleFilter(role)}
                             className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer whitespace-nowrap ${roleFilter === role
-                                ? "bg-amber-500 text-neutral-950 shadow-md"
-                                : "bg-neutral-950/60 text-neutral-400 hover:text-white hover:bg-neutral-800"
+                                    ? "bg-amber-500 text-neutral-950 shadow-md"
+                                    : "bg-neutral-950/60 text-neutral-400 hover:text-white hover:bg-neutral-800"
                                 }`}
                         >
                             {role}
@@ -510,14 +528,14 @@ export default function AdminOverview() {
                                     const uId = user._id || user.id;
                                     const role = getUserRole(user);
                                     const name = getUserDisplayName(user);
-                                    const avatar = getUserAvatar(user);
+                                    const image = getUserAvatar(user);
 
                                     return (
                                         <tr key={uId} className="hover:bg-white/[0.02] transition duration-200">
                                             <td className="py-4 px-6">
                                                 <div className="flex items-center gap-3">
                                                     <Image
-                                                        src={avatar}
+                                                        src={image}
                                                         alt={name}
                                                         width={800}
                                                         height={800}

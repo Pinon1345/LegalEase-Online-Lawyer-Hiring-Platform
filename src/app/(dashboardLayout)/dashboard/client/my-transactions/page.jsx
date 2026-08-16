@@ -48,7 +48,7 @@ export default function ClientTransactionsPage() {
                 const res = await fetch(`${baseURL}/api/client/transactions?email=${encodeURIComponent(cleanEmail)}`, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' },
-                    cache: 'no-store'
+                    cache: 'no-store',
                 });
 
                 if (res.ok && isMounted) {
