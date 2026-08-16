@@ -172,14 +172,6 @@ export default function SignupPage() {
         await signIn.social({
             provider: "google"
         })
-        // try {
-        //     await authClient.signIn.social({
-        //         provider: "google",
-        //         callbackURL: "/",
-        //     });
-        // } catch (err) {
-        //     console.error("Google Signin Exception:", err);
-        // }
     };
 
     return (
