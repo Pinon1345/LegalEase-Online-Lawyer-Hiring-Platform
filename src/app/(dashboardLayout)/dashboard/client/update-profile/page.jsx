@@ -8,6 +8,7 @@ import ClientProfileCard from '@/components/client-profile/ClientProfileCard';
 import DeleteConfirmationModal from '@/components/client-profile/DeleteConfirmationModal';
 import { baseURL } from '@/lib/api/baseUrl';
 import { useSession } from '@/lib/auth-client';
+import { getTokenServer } from '@/lib/getTokenServer';
 
 export default function UpdateClientProfile() {
     const { data: session, status } = useSession();
@@ -96,6 +97,7 @@ export default function UpdateClientProfile() {
 
     // 2. PATCH: Update Client Profile API
     const handleSaveProfile = async (e) => {
+        const token = await getTokenServer();
         e.preventDefault();
         if (!clientEmail) return;
 
@@ -105,7 +107,10 @@ export default function UpdateClientProfile() {
         try {
             const res = await fetch(`${baseURL}/api/client/profile?email=${encodeURIComponent(clientEmail)}`, {
                 method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    authorization: `Bearer ${token}`,
+                },
                 body: JSON.stringify(formData)
             });
 
@@ -133,13 +138,17 @@ export default function UpdateClientProfile() {
 
     // 3. DELETE: Delete/Reset Client Profile API
     const handleConfirmDelete = async () => {
+        const token = await getTokenServer();
         if (!clientEmail) return;
 
         setIsDeleting(true);
         try {
             const res = await fetch(`${baseURL}/api/client/profile?email=${encodeURIComponent(clientEmail)}`, {
                 method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 
+                    'Content-Type': 'application/json',
+                    authorization: `Bearer ${token}`,
+                },
             });
 
             if (res.ok) {
@@ -189,8 +198,8 @@ export default function UpdateClientProfile() {
             {/* Notification Toast / Alert */}
             {statusMessage && (
                 <div className={`p-4 rounded-2xl border flex items-center justify-between text-xs sm:text-sm font-semibold transition-all ${statusMessage.type === 'success' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500' :
-                        statusMessage.type === 'error' ? 'bg-rose-500/10 border-rose-500/30 text-rose-500' :
-                            'bg-secondary/10 border-secondary/30 text-secondary'
+                    statusMessage.type === 'error' ? 'bg-rose-500/10 border-rose-500/30 text-rose-500' :
+                        'bg-secondary/10 border-secondary/30 text-secondary'
                     }`}>
                     <div className="flex items-center gap-2.5">
                         {statusMessage.type === 'success' ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}

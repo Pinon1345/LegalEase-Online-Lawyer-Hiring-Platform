@@ -8,7 +8,7 @@ const db = client.db(process.env.DB_NAME);
 
 export const auth = betterAuth({
     baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
-    // secret: process.env.BETTER_AUTH_SECRET,
+    secret: process.env.BETTER_AUTH_SECRET,
 
     // REQUIRED FOR LINKING ACCOUNTS
 

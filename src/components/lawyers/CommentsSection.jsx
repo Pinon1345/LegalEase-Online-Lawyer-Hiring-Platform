@@ -15,6 +15,7 @@ import { useSession } from "@/lib/auth-client";
 import Link from "next/link";
 import { baseURL } from "@/lib/api/baseUrl";
 import PaymentAlertModal from "../PaymentAlertModal";
+import { getTokenServer } from "@/lib/getTokenServer";
 
 export default function CommentsSection({ lawyer }) {
     const { data: session } = useSession();
@@ -36,10 +37,14 @@ export default function CommentsSection({ lawyer }) {
     // 1. Standalone function to load comments (used on initial load and post-submit)
     const loadComments = useCallback(async () => {
         if (!lawyerId) return;
+        const token = await getTokenServer();
 
         try {
             const res = await fetch(`${baseURL}/api/comments?lawyerId=${lawyerId}`, {
                 cache: "no-store",
+                headers: {
+                    authorization: `Bearer ${token}`
+                },
             });
             if (!res.ok) {
                 setComments([]);
@@ -93,6 +98,7 @@ export default function CommentsSection({ lawyer }) {
 
     // 3. Handle Submit Comment
     const handleSubmitComment = async (e) => {
+        const token = await getTokenServer()
         e.preventDefault();
 
         if (!isClient) {
@@ -113,7 +119,10 @@ export default function CommentsSection({ lawyer }) {
         try {
             const res = await fetch(`${baseURL}/api/comments`, {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    authorization: `Bearer ${token}`,
+                },
                 body: JSON.stringify({
                     lawyerId: lawyerId,
                     lawyerName: lawyer?.lawyerName || lawyer?.name || "",

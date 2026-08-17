@@ -27,7 +27,7 @@ export default function ClientCommentsPage() {
         let isMounted = true;
 
         const fetchMyComments = async () => {
-            
+
             const token = await getTokenServer();
 
             if (!user?.email) {
@@ -80,6 +80,7 @@ export default function ClientCommentsPage() {
 
     // PATCH Update Comment
     const handleUpdateComment = async (id) => {
+        const token = await getTokenServer();
         if (!editText.trim()) {
             toast.error("Comment cannot be empty");
             return;
@@ -88,7 +89,10 @@ export default function ClientCommentsPage() {
         try {
             const res = await fetch(`${baseURL}/api/comments/${id}`, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    authorization: `Bearer ${token}`,
+                },
                 body: JSON.stringify({ commentText: editText, rating: editRating }),
             });
 
@@ -122,12 +126,16 @@ export default function ClientCommentsPage() {
 
     // Confirm DELETE Comment
     const handleConfirmDelete = async () => {
+        const token = await getTokenServer();
         if (!deletingId) return;
 
         setIsDeleting(true);
         try {
             const res = await fetch(`${baseURL}/api/comments/${deletingId}`, {
                 method: "DELETE",
+                headers: {
+                    authorization: `Bearer ${token}`,
+                },
             });
 
             if (!res.ok) throw new Error("Failed to delete comment");
