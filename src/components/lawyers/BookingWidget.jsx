@@ -239,7 +239,7 @@ export default function BookingWidget({ lawyer, lawyerId }) {
                         min={new Date().toISOString().split("T")[0]}
                         value={selectedDate}
                         onChange={(e) => setSelectedDate(e.target.value)}
-                        className="w-full px-4 py-3 rounded-2xl border border-border/80 bg-neutral-900/40 text-text text-sm focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary transition cursor-pointer"
+                        className="w-full px-4 py-3 rounded-2xl border border-border/80 bg-slate-100 dark:bg-neutral-900/40 text-text text-sm focus:border-secondary focus:outline-none focus:ring-1 focus:ring-secondary transition cursor-pointer"
                     />
                 </div>
 
