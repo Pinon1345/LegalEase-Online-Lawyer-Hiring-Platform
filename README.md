@@ -5,7 +5,7 @@
 </p>
 
 
-### Website Live Link: https://legalease-online-lawyer-hiring-plat.vercel.app/
+#### Website Live Link: https://legalease-online-lawyer-hiring-plat.vercel.app/
 
 
 <p align="center">
@@ -982,7 +982,7 @@ Recommended screenshots:
 
 Example:
 
-```markdown
+
 ## 📸 Screenshots
 
 ### Homepage
@@ -996,7 +996,7 @@ Example:
 ### Hiring History
 
 ![Hiring History](./screenshots/hiring-history.png)
-```
+
 
 ---
 
