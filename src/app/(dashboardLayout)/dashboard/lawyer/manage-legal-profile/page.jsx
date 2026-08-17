@@ -3,10 +3,10 @@
 import React, { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
-import LawyerProfileForm from "@/components/dashboard/LawyerProfileForm";
 import { useSession } from "@/lib/auth-client";
 import { baseURL } from "@/lib/api/baseUrl";
 import { Loader2 } from "lucide-react";
+import LawyerProfileForm from "@/components/dashboard/LawyerProfileForm";
 
 function LegalProfileContent() {
     const { data: session } = useSession();

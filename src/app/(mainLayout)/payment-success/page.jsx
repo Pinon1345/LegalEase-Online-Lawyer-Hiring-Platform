@@ -14,12 +14,9 @@ import {
 } from 'lucide-react';
 import { baseURL } from '@/lib/api/baseUrl';
 import { getUser } from '@/lib/api/session';
-import { getTokenServer } from '@/lib/getTokenServer';
 
 export default async function BookingPaymentSuccess({ searchParams }) {
     const { session_id } = await searchParams;
-
-    const token = await getTokenServer();
 
     const user = await getUser();
 
@@ -50,7 +47,6 @@ export default async function BookingPaymentSuccess({ searchParams }) {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                authorization: `Bearer ${token}`,
             },
             cache: 'no-store',
             body: JSON.stringify({

@@ -6,7 +6,6 @@ import toast from "react-hot-toast";
 import { Modal, Button } from "@heroui/react";
 import { useSession } from "@/lib/auth-client";
 import { baseURL } from "@/lib/api/baseUrl";
-import { getTokenServer } from "@/lib/getTokenServer";
 
 export default function ClientCommentsPage() {
     const { data: session, isPending: sessionLoading } = useSession();
@@ -28,19 +27,13 @@ export default function ClientCommentsPage() {
 
         const fetchMyComments = async () => {
 
-            const token = await getTokenServer();
-
             if (!user?.email) {
                 if (!sessionLoading && isMounted) setLoading(false);
                 return;
             }
 
             try {
-                const res = await fetch(`${baseURL}/api/comments?clientEmail=${user.email}`, {
-                    headers: {
-                        authorization: `Bearer ${token}`
-                    }
-                });
+                const res = await fetch(`${baseURL}/api/comments?clientEmail=${user.email}`);
                 if (!res.ok) throw new Error("Failed to fetch comments");
 
                 const data = await res.json();
@@ -80,7 +73,6 @@ export default function ClientCommentsPage() {
 
     // PATCH Update Comment
     const handleUpdateComment = async (id) => {
-        const token = await getTokenServer();
         if (!editText.trim()) {
             toast.error("Comment cannot be empty");
             return;
@@ -91,7 +83,6 @@ export default function ClientCommentsPage() {
                 method: "PATCH",
                 headers: {
                     "Content-Type": "application/json",
-                    authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({ commentText: editText, rating: editRating }),
             });
@@ -126,16 +117,12 @@ export default function ClientCommentsPage() {
 
     // Confirm DELETE Comment
     const handleConfirmDelete = async () => {
-        const token = await getTokenServer();
         if (!deletingId) return;
 
         setIsDeleting(true);
         try {
             const res = await fetch(`${baseURL}/api/comments/${deletingId}`, {
                 method: "DELETE",
-                headers: {
-                    authorization: `Bearer ${token}`,
-                },
             });
 
             if (!res.ok) throw new Error("Failed to delete comment");

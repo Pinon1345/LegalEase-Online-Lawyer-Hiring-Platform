@@ -20,7 +20,6 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { baseURL } from "@/lib/api/baseUrl";
-import { getTokenServer } from "@/lib/getTokenServer";
 
 export default function AdminAllTransaction() {
     const [searchTerm, setSearchTerm] = useState("");
@@ -57,12 +56,7 @@ export default function AdminAllTransaction() {
 
         const loadInitialData = async () => {
             try {
-                const token = await getTokenServer();
-                const res = await fetch(`${baseURL}/api/transactions`, {
-                    headers: {
-                        authorization: `Bearer ${token}`
-                    }
-                });
+                const res = await fetch(`${baseURL}/api/transactions`);
                 if (!res.ok) {
                     throw new Error("Failed to fetch transactions");
                 }

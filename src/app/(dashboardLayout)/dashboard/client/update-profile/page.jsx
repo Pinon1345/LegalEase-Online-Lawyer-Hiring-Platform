@@ -8,7 +8,6 @@ import ClientProfileCard from '@/components/client-profile/ClientProfileCard';
 import DeleteConfirmationModal from '@/components/client-profile/DeleteConfirmationModal';
 import { baseURL } from '@/lib/api/baseUrl';
 import { useSession } from '@/lib/auth-client';
-import { getTokenServer } from '@/lib/getTokenServer';
 
 export default function UpdateClientProfile() {
     const { data: session, status } = useSession();
@@ -97,7 +96,6 @@ export default function UpdateClientProfile() {
 
     // 2. PATCH: Update Client Profile API
     const handleSaveProfile = async (e) => {
-        const token = await getTokenServer();
         e.preventDefault();
         if (!clientEmail) return;
 
@@ -109,7 +107,6 @@ export default function UpdateClientProfile() {
                 method: 'PATCH',
                 headers: {
                     'Content-Type': 'application/json',
-                    authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify(formData)
             });
@@ -138,7 +135,6 @@ export default function UpdateClientProfile() {
 
     // 3. DELETE: Delete/Reset Client Profile API
     const handleConfirmDelete = async () => {
-        const token = await getTokenServer();
         if (!clientEmail) return;
 
         setIsDeleting(true);
@@ -147,7 +143,6 @@ export default function UpdateClientProfile() {
                 method: 'DELETE',
                 headers: { 
                     'Content-Type': 'application/json',
-                    authorization: `Bearer ${token}`,
                 },
             });
 

@@ -21,7 +21,6 @@ import { useSession } from "@/lib/auth-client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { baseURL } from "@/lib/api/baseUrl";
-import { getTokenServer } from "@/lib/getTokenServer";
 
 export default function BookingWidget({ lawyer, lawyerId }) {
     const [selectedDate, setSelectedDate] = useState("");
@@ -72,7 +71,6 @@ export default function BookingWidget({ lawyer, lawyerId }) {
 
     // Submits request to backend and redirects to client history page
     const handleConfirmBooking = async () => {
-        const token = await getTokenServer();
         setIsSubmitting(true);
         try {
             const payload = {
@@ -90,7 +88,6 @@ export default function BookingWidget({ lawyer, lawyerId }) {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify(payload),
             });
