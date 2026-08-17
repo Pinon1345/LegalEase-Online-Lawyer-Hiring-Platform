@@ -5,8 +5,6 @@
 </p>
 
 
-#### Website Live Link: https://legalease-online-lawyer-hiring-plat.vercel.app/
-
 
 <p align="center">
   <em>Connecting valuable clients with trusted lawyers through a secure, transparent, and intuitive digital legal marketplace.</em>
@@ -23,6 +21,9 @@
 ![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
 
 </p>
+
+
+#### Website Live Link: https://legalease-online-lawyer-hiring-plat.vercel.app/
 
 ---
 
